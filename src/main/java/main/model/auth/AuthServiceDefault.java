@@ -5,7 +5,7 @@ import main.model.db.dto.AffiliationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service
+@Service("authServiceDefault")
 public class AuthServiceDefault implements AuthService {
 
     private AffiliationDAO affiliationDAO;
@@ -36,14 +36,15 @@ public class AuthServiceDefault implements AuthService {
 
     // 회원가입용 메서드
     @Override
-    public boolean signup(String affiliationCode , String password){
+    public boolean signup(String affiliationCode, String password, String storeName) {
         AffiliationDTO affiliation = new AffiliationDTO();
         affiliation.setAffiliationCode(affiliationCode);
         affiliation.setPassword(password);
+        affiliation.setStoreName(storeName);  // 점포명 세팅
         try {
             affiliationDAO.insertAffiliation(affiliation);
             return true;
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
