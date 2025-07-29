@@ -37,7 +37,17 @@ public class AuthServiceDefault implements AuthService {
 
     // 회원가입용 메서드
     @Override
-    public boolean signup(String userId , String password){
-        return true;
+    public boolean signup(String userId , String password, String affiliationCode){
+        UserDTO user = new UserDTO();
+        user.setId(userId);
+        user.setPassword(password);
+        user.setAffiliationCode(affiliationCode);
+        try {
+            userDAO.insertUser(user);
+            return true;
+        }catch(Exception e){
+            e.printStackTrace();
+            return false;
+        }
     }
 }

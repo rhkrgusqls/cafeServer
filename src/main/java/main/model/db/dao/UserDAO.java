@@ -28,7 +28,7 @@ public class UserDAO {
     }
 
     public int insertUser(UserDTO user) {
-        String sql = "INSERT INTO users (id, password, affiliation_code) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO user (id, password, affiliation_code) VALUES (?, ?, ?)";
         return jdbcTemplate.update(sql, user.getId(), user.getPassword(), user.getAffiliationCode());
     }
 }
