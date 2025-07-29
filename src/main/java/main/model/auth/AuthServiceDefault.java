@@ -15,7 +15,6 @@ public class AuthServiceDefault implements AuthService {
         this.userDAO = userDAO;
     }
 
-
     // 로그인용 메서드
     @Override
     public boolean login(String username, String password) {
