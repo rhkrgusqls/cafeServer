@@ -11,7 +11,7 @@ public class AuthServiceDefault implements AuthService {
     private AffiliationDAO affiliationDAO;
 
     @Autowired
-    AuthServiceDefault(AffiliationDAO userDAO) {
+    AuthServiceDefault(AffiliationDAO affiliationDAO) {
         this.affiliationDAO = affiliationDAO;
     }
 

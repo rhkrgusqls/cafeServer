@@ -1,22 +1,22 @@
 package main.model.login.dto;
 
 public class LoginRequest {
-    private String username;
+    private String affiliationCode;
     private String password;
 
     public LoginRequest() {}
 
-    public LoginRequest(String username, String password) {
-        this.username = username;
+    public LoginRequest(String affiliationCode, String password) {
+        this.affiliationCode = affiliationCode;
         this.password = password;
     }
 
-    public String getUsername() {
-        return username;
+    public String getAffiliationCode() {
+        return affiliationCode;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setAffiliationCode(String affiliationCode) {
+        this.affiliationCode = affiliationCode;
     }
 
     public String getPassword() {
