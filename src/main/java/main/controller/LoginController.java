@@ -20,7 +20,7 @@ public class LoginController {
 
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest request) {
-        boolean result = authServiceDefault.login(request.getUsername(), request.getPassword());
+        boolean result = authServiceDefault.login(request.getAffiliationCode(), request.getPassword());
         if (result) {
             return new LoginResponse(true, "로그인 성공");
         } else {

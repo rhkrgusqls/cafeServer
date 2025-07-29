@@ -1,28 +1,28 @@
 package main.model.auth;
 
-import main.model.db.dao.UserDAO;
-import main.model.db.dto.UserDTO;
+import main.model.db.dao.AffiliationDAO;
+import main.model.db.dto.AffiliationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthServiceDefault implements AuthService {
 
-    private UserDAO userDAO;
+    private AffiliationDAO affiliationDAO;
 
     @Autowired
-    AuthServiceDefault(UserDAO userDAO) {
-        this.userDAO = userDAO;
+    AuthServiceDefault(AffiliationDAO affiliationDAO) {
+        this.affiliationDAO = affiliationDAO;
     }
 
     // 로그인용 메서드
     @Override
-    public boolean login(String username, String password) {
-        UserDTO user = userDAO.findById(username);
-        if (user == null) {
+    public boolean login(String affiliationId, String password) {
+        AffiliationDTO affiliation = affiliationDAO.findByCode(affiliationId);
+        if (affiliation == null) {
             return false;
         }
-        if (user.getPassword().equals(password)) {
+        if (affiliation.getPassword().equals(password)) {
             return true;
         }
         return false;
@@ -36,13 +36,12 @@ public class AuthServiceDefault implements AuthService {
 
     // 회원가입용 메서드
     @Override
-    public boolean signup(String userId , String password, String affiliationCode){
-        UserDTO user = new UserDTO();
-        user.setId(userId);
-        user.setPassword(password);
-        user.setAffiliationCode(affiliationCode);
+    public boolean signup(String affiliationCode , String password){
+        AffiliationDTO affiliation = new AffiliationDTO();
+        affiliation.setAffiliationCode(affiliationCode);
+        affiliation.setPassword(password);
         try {
-            userDAO.insertUser(user);
+            affiliationDAO.insertAffiliation(affiliation);
             return true;
         }catch(Exception e){
             e.printStackTrace();

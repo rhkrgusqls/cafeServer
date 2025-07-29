@@ -10,12 +10,12 @@ public class AffiliationDAO {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public AffiliationDTO findByCode(int code) {
+    public AffiliationDTO findByCode(String code) {
         String sql = "SELECT affiliation_code, store_name FROM affiliation WHERE affiliation_code = ?";
         try {
             return jdbcTemplate.queryForObject(sql, new Object[]{code}, (rs, rowNum) -> {
                 AffiliationDTO aff = new AffiliationDTO();
-                aff.setAffiliationCode(rs.getInt("affiliation_code"));
+                aff.setAffiliationCode(rs.getString("affiliation_code"));
                 aff.setStoreName(rs.getString("store_name"));
                 return aff;
             });

@@ -10,6 +10,9 @@ import org.springframework.context.ApplicationContext;
 public class MainApplication {
     public static void main(String[] args) {
         ApplicationContext context = SpringApplication.run(MainApplication.class, args);
+        AuthService authService = context.getBean("authServiceDefault", AuthService.class);
+        System.out.println(authService.login("barista.lee", "coffee123!"));
+        System.out.println(authService.login("barista.lee", "coffee123"));
 
         try {
             ItemStockDAO itemStockDAO = context.getBean(ItemStockDAO.class);
