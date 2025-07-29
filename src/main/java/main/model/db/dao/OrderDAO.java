@@ -16,6 +16,7 @@ public class OrderDAO {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    /** 하나의 주문내역을 상세 조회 */
     public OrderDTO findById(int orderId) {
         String sql = "SELECT order_id, item_id, id, quantity, order_date, state FROM _order WHERE order_id = ?";
         try {
@@ -34,6 +35,7 @@ public class OrderDAO {
         }
     }
 
+    /** DTO를 외부에서 정의 후 삽입하며 데이터 생성 이때 order_Date는 커렌트 타임 스탬프로 자동으로 찍힘 */
     public int insertOrder(OrderDTO order) {
         String sql = "INSERT INTO _order (order_id, item_id, id, quantity, state) VALUES (?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql,
@@ -44,13 +46,18 @@ public class OrderDAO {
                 order.getState());
     }
 
+    /** 대기상태 wait,
+     * reviewing 검토중상태,
+     * processed요청 처리됨상태(본점에서만 검토됨),
+     * re-review-needed 재검토필요상태 ,
+     * 종결상태 completed */
     public int updateState(int orderId, String newState) {
         String sql = "UPDATE _order SET state = ? WHERE order_id = ?";
         return jdbcTemplate.update(sql, newState, orderId);
     }
 
-    // affiliation_code로 묶어 item_id별 quantity 합산 조회
-    public List<Map<String, Object>> getQuantitySumGroupedByItemForAffiliation(int affiliationCode) {
+    /** affiliation_code로 묶어 item_id별 quantity 합산 조회*/
+    public List<Map<String, Object>> getQuantityByItem(int affiliationCode) {
         String sql = "SELECT item_id, SUM(quantity) AS total_quantity " +
                 "FROM _order o JOIN user u ON o.id = u.id " +
                 "WHERE u.affiliation_code = ? " +
@@ -58,8 +65,8 @@ public class OrderDAO {
         return jdbcTemplate.queryForList(sql, affiliationCode);
     }
 
-    // 전체 item_id별 quantity 합산 조회 (오버로딩)
-    public List<Map<String, Object>> getQuantitySumGroupedByItemForUserAffiliation() {
+    /** 전체 item_id별 quantity 합산 조회 (오버로딩)*/
+    public List<Map<String, Object>> getQuantityByItem() {
         String sql = "SELECT item_id, SUM(quantity) AS total_quantity FROM _order GROUP BY item_id";
         return jdbcTemplate.queryForList(sql);
     }
@@ -74,32 +81,3 @@ public class OrderDAO {
         }
     }
 }
-
-
-
-//ApplicationContext context = SpringApplication.run(MainApplication.class, args);
-//OrderDAO orderDAO = context.getBean(OrderDAO.class);
-//
-//// findById 호출
-//OrderDTO order = orderDAO.findById(5001);
-//        System.out.println(order);
-//
-//// insertOrder 호출
-//OrderDTO newOrder = new OrderDTO();
-//        newOrder.setOrderId(6001);
-//        newOrder.setId("barista.lee");
-//        newOrder.setItemId(2);
-//        newOrder.setQuantity(5);
-//        newOrder.setState("wait");
-//        orderDAO.insertOrder(newOrder);
-//
-//// updateState 호출
-//        orderDAO.updateState(6001, "completed");
-//
-//// affiliationCode로 그룹별 수량 합계 조회
-//List<Map<String, Object>> sumsForAffiliation = orderDAO.getQuantitySumGroupedByItemForAffiliation(101);
-//        System.out.println(sumsForAffiliation);
-//
-//// 전체 그룹별 수량 합계 조회 (오버로딩)
-//List<Map<String, Object>> sumsAll = orderDAO.getQuantitySumGroupedByItemForUserAffiliation();
-//        System.out.println(sumsAll);
