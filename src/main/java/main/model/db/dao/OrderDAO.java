@@ -18,13 +18,12 @@ public class OrderDAO {
 
     /** 하나의 주문내역을 상세 조회 */
     public OrderDTO findById(int orderId) {
-        String sql = "SELECT order_id, item_id, id, quantity, order_date, state FROM _order WHERE order_id = ?";
+        String sql = "SELECT order_id, item_id, quantity, order_date, state FROM _order WHERE order_id = ?";
         try {
             return jdbcTemplate.queryForObject(sql, new Object[]{orderId}, (rs, rowNum) -> {
                 OrderDTO order = new OrderDTO();
                 order.setOrderId(rs.getInt("order_id"));
                 order.setItemId(rs.getInt("item_id"));
-                order.setId(rs.getString("id"));
                 order.setQuantity(rs.getInt("quantity"));
                 order.setOrderDate(rs.getTimestamp("order_date"));
                 order.setState(rs.getString("state"));
@@ -37,11 +36,10 @@ public class OrderDAO {
 
     /** DTO를 외부에서 정의 후 삽입하며 데이터 생성 이때 order_Date는 커렌트 타임 스탬프로 자동으로 찍힘 */
     public int insertOrder(OrderDTO order) {
-        String sql = "INSERT INTO _order (order_id, item_id, id, quantity, state) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO _order (order_id, item_id, quantity, state) VALUES (?, ?, ?, ?)";
         return jdbcTemplate.update(sql,
                 order.getOrderId(),
                 order.getItemId(),
-                order.getId(),
                 order.getQuantity(),
                 order.getState());
     }
@@ -69,15 +67,5 @@ public class OrderDAO {
     public List<Map<String, Object>> getQuantityByItem() {
         String sql = "SELECT item_id, SUM(quantity) AS total_quantity FROM _order GROUP BY item_id";
         return jdbcTemplate.queryForList(sql);
-    }
-
-    // 내부적 헬퍼 메서드 (userId로 affiliation_code 조회)
-    private Integer findAffiliationCodeByUserId(String userId) {
-        String sql = "SELECT affiliation_code FROM user WHERE id = ?";
-        try {
-            return jdbcTemplate.queryForObject(sql, new Object[]{userId}, Integer.class);
-        } catch (Exception e) {
-            return null;
-        }
     }
 }

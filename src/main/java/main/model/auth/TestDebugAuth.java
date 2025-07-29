@@ -18,7 +18,7 @@ public class TestDebugAuth implements AuthService {
 
     // 회원가입용 메서드
     @Override
-    public boolean signup(String userId , String password, String affiliationCode){
+    public boolean signup(String affiliationCode , String password){
         return true;
     }
 }
