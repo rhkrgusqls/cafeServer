@@ -1,5 +1,7 @@
 package main.model.db.dto;
 
+//종결
+
 public class UserDTO {
     private String id;
     private String password;
