@@ -1,6 +1,6 @@
-package db.dao;
+package main.model.db.dao;
 
-import db.dto.AffiliationDTO;
+import main.model.db.dto.AffiliationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;

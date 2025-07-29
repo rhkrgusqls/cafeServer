@@ -1,7 +1,7 @@
-package auth;
+package main.model.auth;
 
-import db.dao.UserDAO;
-import db.dto.UserDTO;
+import main.model.db.dao.UserDAO;
+import main.model.db.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

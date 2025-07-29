@@ -1,4 +1,4 @@
-package db.dto;
+package main.model.db.dto;
 
 import java.sql.Timestamp;
 

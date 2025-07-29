@@ -1,17 +1,12 @@
-package db.dao;
+package main.model.db.dao;
 
-import db.dto.UserDTO;
+import main.model.db.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class UserDAO {
-
-    //spring.datasource.url=jdbc:mysql://34.47.125.114:3306/cafe_server_sb?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Seoul
-    //spring.datasource.username=root
-    //spring.datasource.password=QWER1234!
-    //spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
