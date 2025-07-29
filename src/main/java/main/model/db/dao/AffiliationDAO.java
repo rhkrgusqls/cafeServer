@@ -11,11 +11,12 @@ public class AffiliationDAO {
     private JdbcTemplate jdbcTemplate;
 
     public AffiliationDTO findByCode(String code) {
-        String sql = "SELECT affiliation_code, store_name FROM affiliation WHERE affiliation_code = ?";
+        String sql = "SELECT affiliation_code, password, store_name FROM affiliation WHERE affiliation_code = ?";
         try {
             return jdbcTemplate.queryForObject(sql, new Object[]{code}, (rs, rowNum) -> {
                 AffiliationDTO aff = new AffiliationDTO();
                 aff.setAffiliationCode(rs.getString("affiliation_code"));
+                aff.setPassword(rs.getString("password"));
                 aff.setStoreName(rs.getString("store_name"));
                 return aff;
             });
@@ -25,7 +26,7 @@ public class AffiliationDAO {
     }
 
     public int insertAffiliation(AffiliationDTO affiliation) {
-        String sql = "INSERT INTO affiliation (affiliation_code, store_name) VALUES (?, ?)";
-        return jdbcTemplate.update(sql, affiliation.getAffiliationCode(), affiliation.getStoreName());
+        String sql = "INSERT INTO affiliation (affiliation_code, store_name, password) VALUES (?, ?, ?)";
+        return jdbcTemplate.update(sql, affiliation.getAffiliationCode(), affiliation.getStoreName(), affiliation.getPassword());
     }
 }

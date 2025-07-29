@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import java.util.Map;
 import main.exception.InsufficientStockException;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class ItemStockDAO {
@@ -81,15 +82,14 @@ public class ItemStockDAO {
      * 해당 점포에 있는 지정한 아이템의 갯수를 quantityToDecrease만큼 차감(원본 - quantityToDecrease)
      * 만약 수량이 부족하다면 예외Exception 발생
      */
+    @Transactional
     public void decreaseStock(int itemId, int affiliationCode, int quantityToDecrease) {
-        // 1. 가용 수량 확인
         int totalAvailable = getAvailableQuantity(itemId, affiliationCode);
         if (totalAvailable < quantityToDecrease) {
             throw new InsufficientStockException("Not enough stock to fulfill the request. Available: " +
                     totalAvailable + ", Requested: " + quantityToDecrease);
         }
 
-        // 2. FIFO 방식 차감
         String sql = "SELECT stock_id, quantity FROM item_stock " +
                 "WHERE item_id = ? AND affiliation_code = ? AND status = 'available' AND quantity > 0 " +
                 "ORDER BY received_date ASC";
@@ -97,8 +97,8 @@ public class ItemStockDAO {
         var stocks = jdbcTemplate.queryForList(sql, itemId, affiliationCode);
 
         for (Map<String, Object> stock : stocks) {
-            int stockId = (int) stock.get("stock_id");
-            int currentQuantity = (int) stock.get("quantity");
+            int stockId = ((Number) stock.get("stock_id")).intValue();
+            int currentQuantity = ((Number) stock.get("quantity")).intValue();
 
             if (quantityToDecrease <= 0) break;
 

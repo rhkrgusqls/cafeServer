@@ -11,5 +11,5 @@ public interface AuthService {
     public boolean authenticate();
 
     // 회원가입용 메서드
-    public boolean signup(String affiliationCode , String password);
+    public boolean signup(String affiliationCode, String password, String storeName) ;
 }
