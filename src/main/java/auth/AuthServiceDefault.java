@@ -1,0 +1,43 @@
+package auth;
+
+import db.dao.UserDAO;
+import db.dto.UserDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AuthServiceDefault implements AuthService {
+
+    private UserDAO userDAO;
+
+    @Autowired
+    AuthServiceDefault(UserDAO userDAO) {
+        this.userDAO = userDAO;
+    }
+
+
+    // 로그인용 메서드
+    @Override
+    public boolean login(String username, String password) {
+        UserDTO user = userDAO.findById(username);
+        if (user == null) {
+            return false;
+        }
+        if (user.getPassword().equals(password)) {
+            return true;
+        }
+        return false;
+    }
+
+    // 로그인 확인용 메서드
+    @Override
+    public boolean authenticate(){
+        return true;
+    }
+
+    // 회원가입용 메서드
+    @Override
+    public boolean signup(String userId , String password){
+        return true;
+    }
+}
