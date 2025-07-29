@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+//보안성 기능, 비밀번호 수정을 추가하려하지 않는다면 이 부분은 종결
+
 @Repository
 public class UserDAO {
 
