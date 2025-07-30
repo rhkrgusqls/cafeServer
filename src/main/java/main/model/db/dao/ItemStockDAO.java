@@ -4,6 +4,8 @@ import main.model.db.dto.db.ItemStockDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 import java.util.Map;
 import main.exception.InsufficientStockException;
 import org.springframework.transaction.annotation.Transactional;
@@ -111,6 +113,48 @@ public class ItemStockDAO {
                 quantityToDecrease = 0;
             }
         }
+    }
+
+    /**
+     * 오버리딩 state가 없다면 자동으로 available 상태인 리스트만 출력
+     * @param affiliationCode
+     * @return
+     */
+    public List<ItemStockDTO> getItemStockList(int affiliationCode) {
+        String sql = "SELECT stock_id, item_id, quantity, expire_date, received_date, status, affiliation_code " +
+                "FROM item_stock WHERE affiliation_code = ? AND status = 'available'";
+        return jdbcTemplate.query(sql, new Object[]{affiliationCode}, (rs, rowNum) -> {
+            ItemStockDTO stock = new ItemStockDTO();
+            stock.setStockId(rs.getInt("stock_id"));
+            stock.setItemId(rs.getInt("item_id"));
+            stock.setQuantity(rs.getInt("quantity"));
+            stock.setExpireDate(rs.getTimestamp("expire_date"));
+            stock.setReceivedDate(rs.getTimestamp("received_date"));
+            stock.setStatus(rs.getString("status"));
+            stock.setAffiliationCode(rs.getInt("affiliation_code"));
+            return stock;
+        });
+    }
+
+    /**
+     * 오버리딩 state가 있다면 해당 state의 리스트 출력
+     * @param affiliationCode
+     * @return
+     */
+    public List<ItemStockDTO> getItemStockList(int affiliationCode, String state) {
+        String sql = "SELECT stock_id, item_id, quantity, expire_date, received_date, status, affiliation_code " +
+                "FROM item_stock WHERE affiliation_code = ? AND status = ?";
+        return jdbcTemplate.query(sql, new Object[]{affiliationCode, state}, (rs, rowNum) -> {
+            ItemStockDTO stock = new ItemStockDTO();
+            stock.setStockId(rs.getInt("stock_id"));
+            stock.setItemId(rs.getInt("item_id"));
+            stock.setQuantity(rs.getInt("quantity"));
+            stock.setExpireDate(rs.getTimestamp("expire_date"));
+            stock.setReceivedDate(rs.getTimestamp("received_date"));
+            stock.setStatus(rs.getString("status"));
+            stock.setAffiliationCode(rs.getInt("affiliation_code"));
+            return stock;
+        });
     }
 }
 
