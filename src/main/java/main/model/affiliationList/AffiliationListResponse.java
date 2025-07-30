@@ -5,20 +5,20 @@ import java.util.List;
 
 public class AffiliationListResponse {
 
-    private List<AffiliationDTO> affiliationList;
+    private List<AffiliationListDTO> affiliationList;
 
     public AffiliationListResponse() {
     }
 
-    public AffiliationListResponse(List<AffiliationDTO> affiliationList) {
+    public AffiliationListResponse(List<AffiliationListDTO> affiliationList) {
         this.affiliationList = affiliationList;
     }
 
-    public List<AffiliationDTO> getAffiliationList() {
+    public List<AffiliationListDTO> getAffiliationList() {
         return affiliationList;
     }
 
-    public void setAffiliationList(List<AffiliationDTO> affiliationList) {
+    public void setAffiliationList(List<AffiliationListDTO> affiliationList) {
         this.affiliationList = affiliationList;
     }
 }

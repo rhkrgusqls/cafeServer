@@ -1,5 +1,6 @@
 package main.model.db.dao;
 
+import main.model.affiliationList.AffiliationListDTO;
 import main.model.db.dto.AffiliationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,10 +33,10 @@ public class AffiliationDAO {
         return jdbcTemplate.update(sql, affiliation.getAffiliationCode(), affiliation.getStoreName(), affiliation.getPassword());
     }
 
-    public List<AffiliationDTO> getAllAffiliationList() {
+    public List<AffiliationListDTO> getAllAffiliationList() {
         String sql = "SELECT affiliation_code, store_name FROM affiliation";
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
-            AffiliationDTO aff = new AffiliationDTO();
+            AffiliationListDTO aff = new AffiliationListDTO();
             aff.setAffiliationCode(rs.getString("affiliation_code"));
             aff.setStoreName(rs.getString("store_name"));
             return aff;

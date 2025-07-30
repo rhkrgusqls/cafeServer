@@ -1,5 +1,6 @@
 package main.controller;
 
+import main.model.affiliationList.AffiliationListDTO;
 import main.model.db.dao.AffiliationDAO;
 import main.model.affiliationList.AffiliationListResponse;
 import main.model.db.dto.AffiliationDTO;
@@ -19,7 +20,7 @@ public class AffiliationListController {
     @GetMapping("/list")
     public AffiliationListResponse getAffiliationList() {
         try {
-            List<AffiliationDTO> list = affiliationDAO.getAllAffiliationList();
+            List<AffiliationListDTO> list = affiliationDAO.getAllAffiliationList();
             return new AffiliationListResponse(list);
         } catch (Exception e) {
             return new AffiliationListResponse(Collections.emptyList());
