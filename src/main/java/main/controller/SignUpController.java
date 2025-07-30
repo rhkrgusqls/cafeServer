@@ -1,6 +1,7 @@
 package main.controller;
 
 
+import main.exception.SignupException;
 import main.model.auth.AuthServiceDefault;
 import main.model.login.dto.LoginRequest;
 import main.model.login.dto.LoginResponse;
@@ -21,11 +22,15 @@ public class SignUpController {
 
     @PostMapping("/signup")
     public SignUpResponse signup(@RequestBody SignUpRequest request) {
-        boolean result = authServiceDefault.signup(request.getAffiliationCode(), request.getPassword(), request.getStoreName());
-        if (result) {
-            return new SignUpResponse(true, "회원가입 성공");
-        } else {
-            return new SignUpResponse(false, "점포 번호가 중복이거나 유효한 값이 아닙니다.");
+        try {
+            return new SignUpResponse(authServiceDefault.signup(
+                            request.getAffiliationCode(),
+                            request.getPassword(),
+                            request.getStoreName()),
+                    "회원가입 성공");
+        } catch (
+                SignupException e) {
+            return new SignUpResponse(false, e.getMessage());
         }
     }
 }

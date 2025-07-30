@@ -1,6 +1,7 @@
 package main.model.auth;
 
 import main.exception.LoginException;
+import main.exception.SignupException;
 import main.model.db.dao.AffiliationDAO;
 import main.model.db.dto.AffiliationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,12 +45,13 @@ public class AuthServiceDefault implements AuthService {
         affiliation.setAffiliationCode(affiliationCode);
         affiliation.setPassword(password);
         affiliation.setStoreName(storeName);  // 점포명 세팅
+
         try {
             affiliationDAO.insertAffiliation(affiliation);
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            // 예외 발생 시 사용자 정의 예외로 래핑 후 던짐
+            throw new SignupException("점포 코드 중복 또는 데이터베이스 오류: " + affiliationCode, e);
         }
     }
 }
