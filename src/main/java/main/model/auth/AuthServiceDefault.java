@@ -1,5 +1,6 @@
 package main.model.auth;
 
+import main.exception.LoginException;
 import main.model.db.dao.AffiliationDAO;
 import main.model.db.dto.AffiliationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +20,17 @@ public class AuthServiceDefault implements AuthService {
     @Override
     public boolean login(String affiliationId, String password) {
         AffiliationDTO affiliation = affiliationDAO.findByCode(affiliationId);
-        if (affiliation == null) {
-            return false;
-        }
-        if (affiliation.getPassword().equals(password)) {
-            return true;
-        }
-        return false;
-    }
 
+        if (affiliation == null) {
+            throw new LoginException("존재하지 않는 아이디입니다.");
+        }
+
+        if (!affiliation.getPassword().equals(password)) {
+            throw new LoginException("비밀번호가 올바르지 않습니다.");
+        }
+
+        return true;
+    }
     // 로그인 확인용 메서드
     @Override
     public boolean authenticate(){

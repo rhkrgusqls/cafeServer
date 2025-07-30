@@ -12,9 +12,6 @@ public class MainApplication {
         ApplicationContext context = SpringApplication.run(MainApplication.class, args);
         System.out.println("App name: " + context.getEnvironment().getProperty("spring.application.name"));
         AuthService authService = context.getBean("authServiceDefault", AuthService.class);
-        System.out.println(authService.login("101", "pass101"));
-        System.out.println(authService.login("101", "coffee123"));
-
         try {
             ItemStockDAO itemStockDAO = context.getBean(ItemStockDAO.class);
             itemStockDAO.decreaseStock(2, 101, 5); // 재고 감소 실행
