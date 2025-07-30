@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public class AffiliationDAO {
     @Autowired
@@ -28,5 +30,15 @@ public class AffiliationDAO {
     public int insertAffiliation(AffiliationDTO affiliation) {
         String sql = "INSERT INTO affiliation (affiliation_code, store_name, password) VALUES (?, ?, ?)";
         return jdbcTemplate.update(sql, affiliation.getAffiliationCode(), affiliation.getStoreName(), affiliation.getPassword());
+    }
+
+    public List<AffiliationDTO> getAllAffiliationList() {
+        String sql = "SELECT affiliation_code, store_name FROM affiliation";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            AffiliationDTO aff = new AffiliationDTO();
+            aff.setAffiliationCode(rs.getString("affiliation_code"));
+            aff.setStoreName(rs.getString("store_name"));
+            return aff;
+        });
     }
 }
