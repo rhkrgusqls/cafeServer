@@ -3,6 +3,7 @@ package main.controller;
 import main.model.auth.AuthServiceDefault;
 import main.model.login.dto.LoginRequest;
 import main.model.login.dto.LoginResponse;
+import main.model.signup.dto.SignUpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.HttpStatus;
@@ -24,10 +25,18 @@ public class LoginController {
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest request) {
         try {
-            authServiceDefault.login(request.getAffiliationCode(), request.getPassword());
-            return new LoginResponse(true, "로그인 성공");
+            //로그인시도
+            return new LoginResponse(
+                            authServiceDefault.login(
+                                    request.getAffiliationCode(),
+                                    request.getPassword())
+                            ,"로그인 성공");
         } catch (LoginException e) {
+            //로그인시 발생할 수 있는 로그인만의 에러를 반송 (보안상 다른 모든 익셉션을 전송하지는 않음 (로그인 로직에서 LoginException 에러를 발생시킴))
             return new LoginResponse(false, e.getMessage());
+        } catch (Exception e) {
+            //예상할 수 없는 에러는 숨기고 반송
+            return new LoginResponse(false, "예기치 못한 오류가 발생했습니다.");
         }
     }
 }
