@@ -3,10 +3,8 @@ package main.controller;
 
 import main.exception.SignupException;
 import main.model.auth.AuthServiceDefault;
-import main.model.login.dto.LoginRequest;
-import main.model.login.dto.LoginResponse;
-import main.model.signup.dto.SignUpRequest;
-import main.model.signup.dto.SignUpResponse;
+import main.model.db.dto.signup.SignUpRequest;
+import main.model.db.dto.signup.SignUpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

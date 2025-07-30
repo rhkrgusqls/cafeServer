@@ -1,11 +1,11 @@
-package main.model.signup.dto;
+package main.model.db.dto.db;
 
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
 @Setter
-public class SignUpRequest {
+@Getter
+public class AffiliationDTO {
     private String affiliationCode;
     private String password;
     private String storeName;

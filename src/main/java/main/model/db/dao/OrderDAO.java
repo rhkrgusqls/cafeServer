@@ -1,10 +1,7 @@
 package main.model.db.dao;
 
-import main.MainApplication;
-import main.model.db.dto.OrderDTO;
+import main.model.db.dto.db.OrderDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 

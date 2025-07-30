@@ -1,6 +1,5 @@
-package main.model.affiliationList;
+package main.model.db.dto.affiliationList;
 
-import main.model.db.dto.AffiliationDTO;
 import java.util.List;
 
 public class AffiliationListResponse {

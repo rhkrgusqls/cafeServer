@@ -1,6 +1,6 @@
 package main.model.db.dao;
 
-import main.model.db.dto.ItemStockDTO;
+import main.model.db.dto.db.ItemStockDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;

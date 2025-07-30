@@ -1,9 +1,8 @@
 package main.controller;
 
-import main.model.affiliationList.AffiliationListDTO;
+import main.model.db.dto.affiliationList.AffiliationListDTO;
 import main.model.db.dao.AffiliationDAO;
-import main.model.affiliationList.AffiliationListResponse;
-import main.model.db.dto.AffiliationDTO;
+import main.model.db.dto.affiliationList.AffiliationListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

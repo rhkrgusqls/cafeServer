@@ -1,19 +1,19 @@
-package main.model.signup.dto;
+package main.model.db.dto.login;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
-public class SignUpResponse {
+public class LoginResponse {
     // Getter/Setter
     private boolean success;
     private String message;
 
     // 기본 생성자
-    public SignUpResponse() {}
+    public LoginResponse() {}
 
-    public SignUpResponse(boolean success, String message) {
+    public LoginResponse(boolean success, String message) {
         this.success = success;
         this.message = message;
     }

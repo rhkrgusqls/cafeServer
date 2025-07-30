@@ -3,7 +3,7 @@ package main.model.auth;
 import main.exception.LoginException;
 import main.exception.SignupException;
 import main.model.db.dao.AffiliationDAO;
-import main.model.db.dto.AffiliationDTO;
+import main.model.db.dto.db.AffiliationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

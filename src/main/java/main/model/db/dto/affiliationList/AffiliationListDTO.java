@@ -1,4 +1,4 @@
-package main.model.affiliationList;
+package main.model.db.dto.affiliationList;
 
 public class AffiliationListDTO {
     private String affiliationCode;
