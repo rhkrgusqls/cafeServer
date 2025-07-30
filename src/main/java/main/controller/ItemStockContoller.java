@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/itemStock")
-public class ItemStockListContoller {
+public class ItemStockContoller {
     @Autowired
     private ItemStockDAO itemStockDAO;
 

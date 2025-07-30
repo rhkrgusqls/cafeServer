@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/items")
-public class ItemListController {
+public class ItemController {
 
     @Autowired
     private ItemDAO itemDAO;
