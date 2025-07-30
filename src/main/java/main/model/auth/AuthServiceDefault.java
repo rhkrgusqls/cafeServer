@@ -19,13 +19,13 @@ public class AuthServiceDefault implements AuthService {
     @Override
     public boolean login(String affiliationId, String password) {
         AffiliationDTO affiliation = affiliationDAO.findByCode(affiliationId);
+
         if (affiliation == null) {
             return false;
         }
-        if (affiliation.getPassword().equals(password)) {
-            return true;
-        }
-        return false;
+
+        if (affiliation.getPassword().equals(password)) {return true;}
+        else{ return false; }
     }
 
     // 로그인 확인용 메서드
