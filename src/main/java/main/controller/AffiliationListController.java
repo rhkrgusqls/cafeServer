@@ -25,4 +25,14 @@ public class AffiliationListController {
             return new AffiliationListResponse(Collections.emptyList());
         }
     }
+
+    @DeleteMapping("/delete")
+    public String deleteAffiliation(@RequestParam String affiliationCode) {
+        int result = affiliationDAO.deleteAffiliation(affiliationCode);
+        if (result == 1) {
+            return "삭제가 완료되었습니다.";
+        } else {
+            return "삭제 실패";
+        }
+    }
 }
