@@ -1,4 +1,4 @@
-package main.model.db.dto.db;
+package main.model.db.dto.itemStockList;
 
 import java.sql.Timestamp;
 
