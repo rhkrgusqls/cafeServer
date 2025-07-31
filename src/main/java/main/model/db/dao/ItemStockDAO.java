@@ -126,7 +126,7 @@ public class ItemStockDAO {
                 "s.quantity, s.expire_date, s.received_date, s.status, s.affiliation_code " +
                 "FROM item_stock s " +
                 "JOIN item i ON s.item_id = i.item_id " +
-                "WHERE s.affiliation_code = ? AND s.status = 'available'";
+                "WHERE s.affiliation_code = ? AND (s.status = 'available' OR s.status = 'defective')";
 
         return jdbcTemplate.query(sql, new Object[]{affiliationCode}, (rs, rowNum) -> {
             JoinedItemStockDTO stock = new JoinedItemStockDTO();
