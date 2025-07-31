@@ -18,12 +18,15 @@ public class ItemStockContoller {
     private ItemStockDAO itemStockDAO;
 
     @PostMapping("/list")
-    public List<JoinedItemStockDTO> getItemStockList(@RequestBody ItemStockRequest request) {
+    public List<JoinedItemStockDTO> getItemStockList(
+            @RequestBody ItemStockRequest request,
+            @RequestParam(required = false) String state) {
+
         try {
-            if (request.getState() == null || request.getState().isEmpty()) {
-                return itemStockDAO.getItemStockList(request.getAffiliationCode());
+            if (state == null || state.isEmpty()) {
+                return itemStockDAO.getItemStockList((request.getAffiliationCode()));
             } else {
-                return itemStockDAO.getItemStockList(request.getAffiliationCode(), request.getState());
+                return itemStockDAO.getItemStockList((request.getAffiliationCode()), state);
             }
         } catch (Exception e) {
             return Collections.emptyList();
