@@ -27,7 +27,7 @@ public class ItemStockDAO {
                 stock.setExpireDate(rs.getTimestamp("expire_date"));
                 stock.setReceivedDate(rs.getTimestamp("received_date"));
                 stock.setStatus(rs.getString("status"));
-                stock.setAffiliationCode(rs.getInt("affiliation_code"));
+                stock.setAffiliationCode(rs.getString("affiliation_code"));
                 return stock;
             });
         } catch (Exception e) {
