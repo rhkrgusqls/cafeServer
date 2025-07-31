@@ -2,6 +2,7 @@ package main.controller;
 
 import main.model.db.dao.ItemStockDAO;
 import main.model.db.dto.db.ItemStockDTO;
+import main.model.db.dto.db.JoinedItemStockDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +19,7 @@ public class ItemStockContoller {
     private ItemStockDAO itemStockDAO;
 
     @GetMapping("/list")
-    public List<ItemStockDTO> getItemStockList(
+    public List<JoinedItemStockDTO> getItemStockList(
             @RequestParam int affiliationCode,
             @RequestParam(required = false) String state) {
 

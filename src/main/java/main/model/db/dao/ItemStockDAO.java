@@ -1,6 +1,7 @@
 package main.model.db.dao;
 
 import main.model.db.dto.db.ItemStockDTO;
+import main.model.db.dto.db.JoinedItemStockDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -120,13 +121,19 @@ public class ItemStockDAO {
      * @param affiliationCode
      * @return
      */
-    public List<ItemStockDTO> getItemStockList(int affiliationCode) {
-        String sql = "SELECT stock_id, item_id, quantity, expire_date, received_date, status, affiliation_code " +
-                "FROM item_stock WHERE affiliation_code = ? AND status = 'available'";
+    public List<JoinedItemStockDTO> getItemStockList(int affiliationCode) {
+        String sql = "SELECT s.stock_id, s.item_id, i.name AS item_name, i.category AS item_category, " +
+                "s.quantity, s.expire_date, s.received_date, s.status, s.affiliation_code " +
+                "FROM item_stock s " +
+                "JOIN item i ON s.item_id = i.item_id " +
+                "WHERE s.affiliation_code = ? AND s.status = 'available'";
+
         return jdbcTemplate.query(sql, new Object[]{affiliationCode}, (rs, rowNum) -> {
-            ItemStockDTO stock = new ItemStockDTO();
+            JoinedItemStockDTO stock = new JoinedItemStockDTO();
             stock.setStockId(rs.getInt("stock_id"));
             stock.setItemId(rs.getInt("item_id"));
+            stock.setItemName(rs.getString("item_name"));         // from item table
+            stock.setItemCategory(rs.getString("item_category")); // from item table
             stock.setQuantity(rs.getInt("quantity"));
             stock.setExpireDate(rs.getTimestamp("expire_date"));
             stock.setReceivedDate(rs.getTimestamp("received_date"));
@@ -139,15 +146,22 @@ public class ItemStockDAO {
     /**
      * 오버리딩 state가 있다면 해당 state의 리스트 출력
      * @param affiliationCode
+     * @param state
      * @return
      */
-    public List<ItemStockDTO> getItemStockList(int affiliationCode, String state) {
-        String sql = "SELECT stock_id, item_id, quantity, expire_date, received_date, status, affiliation_code " +
-                "FROM item_stock WHERE affiliation_code = ? AND status = ?";
+    public List<JoinedItemStockDTO> getItemStockList(int affiliationCode, String state) {
+        String sql = "SELECT s.stock_id, s.item_id, i.name AS item_name, i.category AS item_category, " +
+                "s.quantity, s.expire_date, s.received_date, s.status, s.affiliation_code " +
+                "FROM item_stock s " +
+                "JOIN item i ON s.item_id = i.item_id " +
+                "WHERE s.affiliation_code = ? AND s.status = ?";
+
         return jdbcTemplate.query(sql, new Object[]{affiliationCode, state}, (rs, rowNum) -> {
-            ItemStockDTO stock = new ItemStockDTO();
+            JoinedItemStockDTO stock = new JoinedItemStockDTO();
             stock.setStockId(rs.getInt("stock_id"));
             stock.setItemId(rs.getInt("item_id"));
+            stock.setItemName(rs.getString("item_name"));         // 추가 필드
+            stock.setItemCategory(rs.getString("item_category")); // 추가 필드
             stock.setQuantity(rs.getInt("quantity"));
             stock.setExpireDate(rs.getTimestamp("expire_date"));
             stock.setReceivedDate(rs.getTimestamp("received_date"));
