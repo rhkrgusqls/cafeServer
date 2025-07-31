@@ -42,4 +42,15 @@ public class AffiliationDAO {
             return aff;
         });
     }
+
+    public int deleteAffiliation(String affiliationCode) {
+        String sql = "CALL deleteAffiliationAndBackup(?)";
+        try {
+            jdbcTemplate.update(sql, affiliationCode);
+            return 1; // 성공
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0; // 실패
+        }
+    }
 }
