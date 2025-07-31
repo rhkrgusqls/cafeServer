@@ -20,8 +20,7 @@ public class OderingController {
     @PostMapping("/display")
     public List<OrderDTO> display(@RequestBody ItemStockRequest request) {
         String affiliationCode = request.getAffiliationCode();
-
-        // TODO: 실제 DB 조회 로직 수행
+        
         return orderDAO.displayByAffiliationCode(affiliationCode);
     }
     @PostMapping("/request")
