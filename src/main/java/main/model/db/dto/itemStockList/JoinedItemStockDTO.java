@@ -11,7 +11,7 @@ public class JoinedItemStockDTO {
     private Timestamp expireDate;
     private Timestamp receivedDate;
     private String status;
-    private int affiliationCode;
+    private String affiliationCode;
 
     public int getStockId() { return stockId; }
     public void setStockId(int stockId) { this.stockId = stockId; }
@@ -37,6 +37,6 @@ public class JoinedItemStockDTO {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public int getAffiliationCode() { return affiliationCode; }
-    public void setAffiliationCode(int affiliationCode) { this.affiliationCode = affiliationCode; }
+    public String getAffiliationCode() { return affiliationCode; }
+    public void setAffiliationCode(String affiliationCode) { this.affiliationCode = affiliationCode; }
 }

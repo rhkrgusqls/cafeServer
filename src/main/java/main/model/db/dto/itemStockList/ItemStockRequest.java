@@ -1,14 +1,14 @@
 package main.model.db.dto.itemStockList;
 
 public class ItemStockRequest {
-    private int affiliationCode;
+    private String affiliationCode;
     private String state; // nullable
 
-    public int getAffiliationCode() {
+    public String getAffiliationCode() {
         return affiliationCode;
     }
 
-    public void setAffiliationCode(int affiliationCode) {
+    public void setAffiliationCode(String affiliationCode) {
         this.affiliationCode = affiliationCode;
     }
 

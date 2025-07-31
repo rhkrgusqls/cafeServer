@@ -121,7 +121,7 @@ public class ItemStockDAO {
      * @param affiliationCode
      * @return
      */
-    public List<JoinedItemStockDTO> getItemStockList(int affiliationCode) {
+    public List<JoinedItemStockDTO> getItemStockList(String affiliationCode) {
         String sql = "SELECT s.stock_id, s.item_id, i.name AS item_name, i.category AS item_category, " +
                 "s.quantity, s.expire_date, s.received_date, s.status, s.affiliation_code " +
                 "FROM item_stock s " +
@@ -138,7 +138,7 @@ public class ItemStockDAO {
             stock.setExpireDate(rs.getTimestamp("expire_date"));
             stock.setReceivedDate(rs.getTimestamp("received_date"));
             stock.setStatus(rs.getString("status"));
-            stock.setAffiliationCode(rs.getInt("affiliation_code"));
+            stock.setAffiliationCode(rs.getString("affiliation_code"));
             return stock;
         });
     }
@@ -149,7 +149,7 @@ public class ItemStockDAO {
      * @param state
      * @return
      */
-    public List<JoinedItemStockDTO> getItemStockList(int affiliationCode, String state) {
+    public List<JoinedItemStockDTO> getItemStockList(String affiliationCode, String state) {
         String sql = "SELECT s.stock_id, s.item_id, i.name AS item_name, i.category AS item_category, " +
                 "s.quantity, s.expire_date, s.received_date, s.status, s.affiliation_code " +
                 "FROM item_stock s " +
@@ -166,7 +166,7 @@ public class ItemStockDAO {
             stock.setExpireDate(rs.getTimestamp("expire_date"));
             stock.setReceivedDate(rs.getTimestamp("received_date"));
             stock.setStatus(rs.getString("status"));
-            stock.setAffiliationCode(rs.getInt("affiliation_code"));
+            stock.setAffiliationCode(rs.getString("affiliation_code"));
             return stock;
         });
     }
