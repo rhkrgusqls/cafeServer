@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Map;
 
+//ToDO:유저인증 인터페이스 적용
+
 @Repository
 public class OrderDAO {
     @Autowired

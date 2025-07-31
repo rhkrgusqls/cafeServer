@@ -170,5 +170,10 @@ public class ItemStockDAO {
             return stock;
         });
     }
+
+    public int deleteItemStock(int stockId) {
+        String sql = "DELETE FROM item_stock WHERE stock_id = ?";
+        return jdbcTemplate.update(sql, stockId);
+    }
 }
 

@@ -7,6 +7,8 @@ import main.model.db.dto.login.LoginRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+//ToDO:유저인증 인터페이스 적용
+
 import java.util.List;
 
 @RestController
@@ -20,7 +22,7 @@ public class OderingController {
     @PostMapping("/display")
     public List<OrderDTO> display(@RequestBody ItemStockRequest request) {
         String affiliationCode = request.getAffiliationCode();
-        
+
         return orderDAO.displayByAffiliationCode(affiliationCode);
     }
     @PostMapping("/request")
