@@ -1,6 +1,8 @@
 package main.model.db.dao;
 
+import main.model.db.dto.affiliationList.AffiliationListDTO;
 import main.model.db.dto.db.OrderDTO;
+import main.properties.CustomProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -12,6 +14,13 @@ import java.util.Map;
 public class OrderDAO {
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    private final CustomProperties customProperties;
+
+    @Autowired
+    public OrderDAO(CustomProperties customProperties) {
+        this.customProperties = customProperties;
+    }
 
     /** 하나의 주문내역을 상세 조회 */
     public OrderDTO findById(int orderId) {
@@ -31,14 +40,13 @@ public class OrderDAO {
         }
     }
 
-    /** DTO를 외부에서 정의 후 삽입하며 데이터 생성 이때 order_Date는 커렌트 타임 스탬프로 자동으로 찍힘 */
+    /** DTO를 외부에서 정의 후 삽입하며 데이터 생성 이때 order_date는 CURRENT_TIMESTAMP로 자동 생성됨 */
     public int insertOrder(OrderDTO order) {
-        String sql = "INSERT INTO _order (order_id, item_id, quantity, state) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO _order (item_id, affiliation_code, quantity) VALUES ( ?, ?, ?)";
         return jdbcTemplate.update(sql,
-                order.getOrderId(),
                 order.getItemId(),
-                order.getQuantity(),
-                order.getState());
+                order.getAffiliationCode(),
+                order.getQuantity());
     }
 
     /** 대기상태 wait,
@@ -64,5 +72,31 @@ public class OrderDAO {
     public List<Map<String, Object>> getQuantityByItem() {
         String sql = "SELECT item_id, SUM(quantity) AS total_quantity FROM _order GROUP BY item_id";
         return jdbcTemplate.queryForList(sql);
+    }
+
+    /** 전체 주문 내역 조회 */
+    public List<OrderDTO> displayByAffiliationCode(String affiliationCode) {
+        String sql;
+        Object[] params;
+        if (affiliationCode.equals(customProperties.getAffiliationCode())) {
+            // 전체 조회
+            sql = "SELECT order_id, item_id, quantity, order_date, state, affiliation_code FROM _order ORDER BY order_date DESC";
+            params = new Object[] { };
+        } else {
+            // 특정 affiliation_code만 조회
+            sql = "SELECT order_id, item_id, quantity, order_date, state, affiliation_code FROM _order WHERE affiliation_code = ? ORDER BY order_date DESC";
+            params = new Object[] { affiliationCode };
+        }
+
+        return jdbcTemplate.query(sql, params, (rs, rowNum) -> {
+            OrderDTO order = new OrderDTO();
+            order.setOrderId(rs.getInt("order_id"));
+            order.setAffiliationCode(rs.getString("affiliation_code"));
+            order.setItemId(rs.getInt("item_id"));
+            order.setQuantity(rs.getInt("quantity"));
+            order.setOrderDate(rs.getTimestamp("order_date"));
+            order.setState(rs.getString("state"));
+            return order;
+        });
     }
 }

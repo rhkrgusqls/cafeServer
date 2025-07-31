@@ -1,13 +1,12 @@
 package main.controller;
 
 import main.model.db.dao.AffiliationDAO;
-import main.model.db.dto.delAffilation.DeleteRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/affiliation")
-public class DelStore {
+public class DelStoreController {
 
     @Autowired
     private AffiliationDAO affiliationDAO;
