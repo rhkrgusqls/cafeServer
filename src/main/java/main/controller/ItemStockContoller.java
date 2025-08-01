@@ -81,7 +81,7 @@ public class ItemStockContoller {
 
     // 재고 감소
     @GetMapping("/decrease")
-    public String decreaseStock(@RequestParam int itemId, @RequestParam int affiliationCode, @RequestParam int quantity) {
+    public String decreaseStock(@RequestParam int itemId, @RequestParam String affiliationCode, @RequestParam int quantity) {
         try {
             itemStockDAO.decreaseStock(itemId, affiliationCode, quantity);
             return "재고 감소 성공";

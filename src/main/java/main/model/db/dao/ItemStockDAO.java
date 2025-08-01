@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import main.exception.InsufficientStockException;
@@ -72,7 +74,7 @@ public class ItemStockDAO {
     /**
      * 특정 점포에 있는 특정 아이템의 가용 가능수량 전체 데이터 조회
      */
-    public int getAvailableQuantity(int itemId, int affiliationCode) {
+    public int getAvailableQuantity(int itemId, String affiliationCode) {
         String sql = "SELECT SUM(quantity) FROM item_stock " +
                 "WHERE item_id = ? AND affiliation_code = ? AND status = 'available' AND quantity > 0";
         Integer total = jdbcTemplate.queryForObject(sql, Integer.class, itemId, affiliationCode);
@@ -86,7 +88,7 @@ public class ItemStockDAO {
      * 만약 수량이 부족하다면 예외Exception 발생
      */
     @Transactional
-    public void decreaseStock(int itemId, int affiliationCode, int quantityToDecrease) {
+    public void decreaseStock(int itemId, String affiliationCode, int quantityToDecrease) {
         int totalAvailable = getAvailableQuantity(itemId, affiliationCode);
         if (totalAvailable < quantityToDecrease) {
             throw new InsufficientStockException("Not enough stock to fulfill the request. Available: " +
@@ -175,5 +177,67 @@ public class ItemStockDAO {
         String sql = "UPDATE item_stock SET quantity = 0, status = 'depleted' WHERE stock_id = ?";
         return jdbcTemplate.update(sql, stockId);
     }
+
+    @Transactional
+    public void transferStock(int itemId, String fromAffiliationCode, String toAffiliationCode, int quantityToTransfer) {
+        // 1. 출고 가능 재고 총량 검사
+        int totalAvailable = getAvailableQuantity(itemId, fromAffiliationCode);
+        if (totalAvailable < quantityToTransfer) {
+            throw new InsufficientStockException("Not enough stock to transfer. Available: " +
+                    totalAvailable + ", Requested: " + quantityToTransfer);
+        }
+
+        // 2. 출고 대상 재고 조회 (FIFO)
+        String sql = "SELECT stock_id, quantity, expire_date, status FROM item_stock " +
+                "WHERE item_id = ? AND affiliation_code = ? AND status = 'available' AND quantity > 0 " +
+                "ORDER BY received_date ASC";
+
+        var stocks = jdbcTemplate.queryForList(sql, itemId, fromAffiliationCode);
+
+        int remainingToTransfer = quantityToTransfer;
+        List<ItemStockDTO> stocksToInsert = new ArrayList<>();
+
+        // 3. 출고 재고 분할 및 차감 준비
+        for (Map<String, Object> stock : stocks) {
+            if (remainingToTransfer <= 0) break;
+
+            int stockId = ((Number) stock.get("stock_id")).intValue();
+            int currentQuantity = ((Number) stock.get("quantity")).intValue();
+            Timestamp expireDate = (Timestamp) stock.get("expire_date");
+            String status = (String) stock.get("status");
+
+            int quantityUsed = Math.min(currentQuantity, remainingToTransfer);
+
+            // 출고 재고 정보 생성 (toAffiliationCode로 입고할 때 사용할 것)
+            ItemStockDTO newStock = new ItemStockDTO();
+            newStock.setItemId(itemId);
+            newStock.setQuantity(quantityUsed);
+            newStock.setExpireDate(expireDate);
+            newStock.setStatus(status);
+            newStock.setAffiliationCode(toAffiliationCode);
+            newStock.setReceivedDate(new Timestamp(System.currentTimeMillis())); // 입고 시간 현재 시각으로 설정
+
+            stocksToInsert.add(newStock);
+
+            // 4. 기존 재고 차감 처리
+            if (currentQuantity <= quantityUsed) {
+                jdbcTemplate.update("UPDATE item_stock SET quantity = 0, status = 'depleted' WHERE stock_id = ?", stockId);
+            } else {
+                int newQuantity = currentQuantity - quantityUsed;
+                jdbcTemplate.update("UPDATE item_stock SET quantity = ? WHERE stock_id = ?", newQuantity, stockId);
+            }
+
+            remainingToTransfer -= quantityUsed;
+        }
+
+        // 5. 입고 처리
+        for (ItemStockDTO insertStock : stocksToInsert) {
+            int result = insertItemStock(insertStock);
+            if (result <= 0) {
+                throw new RuntimeException("Failed to insert stock for transfer");
+            }
+        }
+    }
+
 }
 
