@@ -173,6 +173,59 @@ public class ItemStockDAO {
         });
     }
 
+    /**
+     * 오버리딩 state가 없다면 자동으로 available 상태인 리스트만 출력
+     * @return
+     */
+    public List<JoinedItemStockDTO> getAllItemStockList() {
+        String sql = "SELECT s.stock_id, s.item_id, i.name AS item_name, i.category AS item_category, " +
+                "s.quantity, s.expire_date, s.received_date, s.status, s.affiliation_code " +
+                "FROM item_stock s " +
+                "JOIN item i ON s.item_id = i.item_id " +
+                "WHERE (s.status = 'available' OR s.status = 'defective')";
+
+        return jdbcTemplate.query(sql, new Object[]{}, (rs, rowNum) -> {
+            JoinedItemStockDTO stock = new JoinedItemStockDTO();
+            stock.setStockId(rs.getInt("stock_id"));
+            stock.setItemId(rs.getInt("item_id"));
+            stock.setItemName(rs.getString("item_name"));         // from item table
+            stock.setItemCategory(rs.getString("item_category")); // from item table
+            stock.setQuantity(rs.getInt("quantity"));
+            stock.setExpireDate(rs.getTimestamp("expire_date"));
+            stock.setReceivedDate(rs.getTimestamp("received_date"));
+            stock.setStatus(rs.getString("status"));
+            stock.setAffiliationCode(rs.getString("affiliation_code"));
+            return stock;
+        });
+    }
+
+    /**
+     * 오버리딩 state가 있다면 해당 state의 리스트 출력
+     * @param state
+     * @return
+     */
+    public List<JoinedItemStockDTO> getAllItemStockList(String state) {
+        String sql = "SELECT s.stock_id, s.item_id, i.name AS item_name, i.category AS item_category, " +
+                "s.quantity, s.expire_date, s.received_date, s.status, s.affiliation_code " +
+                "FROM item_stock s " +
+                "JOIN item i ON s.item_id = i.item_id " +
+                "WHERE s.status = ?";
+
+        return jdbcTemplate.query(sql, new Object[]{state}, (rs, rowNum) -> {
+            JoinedItemStockDTO stock = new JoinedItemStockDTO();
+            stock.setStockId(rs.getInt("stock_id"));
+            stock.setItemId(rs.getInt("item_id"));
+            stock.setItemName(rs.getString("item_name"));         // 추가 필드
+            stock.setItemCategory(rs.getString("item_category")); // 추가 필드
+            stock.setQuantity(rs.getInt("quantity"));
+            stock.setExpireDate(rs.getTimestamp("expire_date"));
+            stock.setReceivedDate(rs.getTimestamp("received_date"));
+            stock.setStatus(rs.getString("status"));
+            stock.setAffiliationCode(rs.getString("affiliation_code"));
+            return stock;
+        });
+    }
+
     public int deleteItemStock(int stockId) {
         String sql = "UPDATE item_stock SET quantity = 0, status = 'depleted' WHERE stock_id = ?";
         return jdbcTemplate.update(sql, stockId);

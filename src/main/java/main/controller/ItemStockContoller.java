@@ -32,6 +32,18 @@ public class ItemStockContoller {
         }
     }
 
+    @PostMapping("/listAll")
+    public List<JoinedItemStockDTO> getAllItemStockList(
+            @RequestBody ItemStockRequest request,
+            @RequestParam(required = false) String state) {
+
+        if (state == null || state.isEmpty()) {
+            return itemStockDAO.getAllItemStockList();
+        } else {
+            return itemStockDAO.getAllItemStockList(state);
+        }
+    }
+
     // 추가 (Create)
     //ToDo : 약간의 검토 필요(물자를 추가할때 입고일이 다르다고 분립을 시킬것인지 기존 데이터에 병합시킬것인지 만약 병합시키지 않는다면 표시하는쪽에서 나눠서 표시할것인지 합쳐서 표기할것인지)
     @PostMapping("/add")
