@@ -5,6 +5,7 @@ import main.model.db.dao.OrderDAO;
 import main.model.db.dto.db.ItemStockDTO;
 import main.model.db.dto.db.OrderDTO;
 import main.model.db.dto.itemStockList.ItemStockRequest;
+import main.properties.CustomProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +21,9 @@ public class OderingController {
 
     @Autowired
     private OrderDAO orderDAO;
+
+    @Autowired
+    CustomProperties customProperties;
 
     @Autowired
     private ItemStockDAO itemStockDAO;
@@ -51,7 +55,8 @@ public class OderingController {
     @PostMapping("/accept")
     public String accept(@RequestBody ItemStockRequest request, @RequestParam int order_id) {
         try {
-            if ("101".equals(request.getAffiliationCode())) {
+
+            if (customProperties.getAffiliationCode().equals(request.getAffiliationCode())) {
                 int result = orderDAO.updateState(order_id, "processed");
                 return result > 0 ? "요청이 수락되었습니다." : "Failed to update order.";
             }
@@ -64,7 +69,7 @@ public class OderingController {
     @PostMapping("/dismissed")
     public String dismissed(@RequestBody ItemStockRequest request, @RequestParam int order_id) {
         try {
-            if ("101".equals(request.getAffiliationCode())) {
+            if (customProperties.getAffiliationCode().equals(request.getAffiliationCode())) {
                 int result = orderDAO.updateState(order_id, "dismissed");
                 return result > 0 ? "요청이 파기되었습니다." : "Failed to update order.";
             }
@@ -81,7 +86,7 @@ public class OderingController {
             // ToDo: 내부 처리 서비스 로직으로 이전 예정
             itemStockDAO.transferStock(
                     orderDTO.getItemId(),
-                    "101",
+                    customProperties.getAffiliationCode(),
                     orderDTO.getAffiliationCode(),
                     orderDTO.getQuantity()
             );
