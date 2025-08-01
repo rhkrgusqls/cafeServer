@@ -8,8 +8,10 @@ import main.model.db.dto.itemStockList.JoinedItemStockDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
+
+//ToDo:유저인증 인터페이스 적용 (권한분립과 본인인증 처리에 대한 시스템 대책마련 필요)
+//ToDo:익셉션 바리에이션 추가
 
 @RestController
 @RequestMapping("/itemStock")
@@ -18,7 +20,6 @@ public class ItemStockContoller {
     @Autowired
     private ItemStockDAO itemStockDAO;
 
-    // 기존 조회 메서드 유지
     @PostMapping("/list")
     public List<JoinedItemStockDTO> getItemStockList(
             @RequestBody ItemStockRequest request,
@@ -32,34 +33,60 @@ public class ItemStockContoller {
     }
 
     // 추가 (Create)
+    //ToDo : 약간의 검토 필요(물자를 추가할때 입고일이 다르다고 분립을 시킬것인지 기존 데이터에 병합시킬것인지 만약 병합시키지 않는다면 표시하는쪽에서 나눠서 표시할것인지 합쳐서 표기할것인지)
     @PostMapping("/add")
     public String addItemStock(@RequestBody ItemStockDTO itemStock) {
-        int result = itemStockDAO.insertItemStock(itemStock);
-        return result > 0 ? "Insert success" : "Insert failed";
+        try {
+            int result = itemStockDAO.insertItemStock(itemStock);
+            return result > 0 ? "물자추가 성공" : "추가 실패";
+        } catch (Exception e) {
+            return "예기치 못한 오류가 발생했습니다.";
+        }
     }
 
     // 수정 (Update quantity + status 둘 다 가능하게)
-    @PostMapping("/update")
-    public String updateItemStock(@RequestBody ItemStockDTO itemStock) {
-        int result = itemStockDAO.updateItemStock(itemStock.getStockId(), itemStock.getQuantity(), itemStock.getStatus());
-        return result > 0 ? "Update success" : "Update failed";
+    //ToDo:
+    @GetMapping("/update")
+    public String updateItemStock(@RequestParam int stockId,
+                                  @RequestParam(required = false) Integer quantity,
+                                  @RequestParam(required = false) String status) {
+        try {
+            int result = 0;
+
+            if (quantity != null && status != null) {
+                result = itemStockDAO.updateItemStock(stockId, quantity, status);
+            } else if (quantity != null) {
+                result = itemStockDAO.updateItemStock(stockId, quantity);
+            } else if (status != null) {
+                result = itemStockDAO.updateItemStock(stockId, status);
+            } else {
+                return "수정할 항목이 없습니다.";
+            }
+            return result > 0 ? "업데이트 성공" : "업데이트 실패";
+        } catch (Exception e) {
+            return "예기치 못한 오류가 발생했습니다.";
+        }
     }
 
     // 삭제 (Delete)
-    @PostMapping("/delete")
+    @GetMapping("/delete")
     public String deleteItemStock(@RequestParam int stockId) {
-        int result = itemStockDAO.deleteItemStock(stockId);  // DAO에 deleteItemStock 메서드 추가 필요
-        return result > 0 ? "Delete success" : "Delete failed";
+        try {
+            int result = itemStockDAO.deleteItemStock(stockId);
+            return result > 0 ? "삭제 성공" : "삭제 실패";
+        } catch (Exception e) {
+            return "예기치 못한 오류가 발생했습니다.";
+        }
     }
 
-    // 재고 감소 (decreaseStock 호출)
-    @PostMapping("/decrease")
+    // 재고 감소
+    @GetMapping("/decrease")
     public String decreaseStock(@RequestParam int itemId, @RequestParam int affiliationCode, @RequestParam int quantity) {
         try {
             itemStockDAO.decreaseStock(itemId, affiliationCode, quantity);
-            return "Stock decreased successfully";
+            return "재고 감소 성공";
         } catch (Exception e) {
-            return "Failed: " + e.getMessage();
+            return "예기치 못한 오류가 발생했습니다.";
         }
     }
 }

@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import main.exception.LoginException;
 
+//종결
+
 @RestController
 @RequestMapping("/auth")
 public class LoginController {

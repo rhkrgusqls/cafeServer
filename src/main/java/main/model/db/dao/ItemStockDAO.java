@@ -172,7 +172,7 @@ public class ItemStockDAO {
     }
 
     public int deleteItemStock(int stockId) {
-        String sql = "DELETE FROM item_stock WHERE stock_id = ?";
+        String sql = "UPDATE item_stock SET quantity = 0, status = 'depleted' WHERE stock_id = ?";
         return jdbcTemplate.update(sql, stockId);
     }
 }
