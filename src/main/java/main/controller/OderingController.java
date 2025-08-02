@@ -1,5 +1,6 @@
 package main.controller;
 
+import main.model.auth.AuthServiceSession;
 import main.model.db.dao.ItemStockDAO;
 import main.model.db.dao.OrderDAO;
 import main.model.db.dto.db.ItemStockDTO;
@@ -26,10 +27,16 @@ public class OderingController {
     CustomProperties customProperties;
 
     @Autowired
+    private AuthServiceSession authServiceSession;
+
+    @Autowired
     private ItemStockDAO itemStockDAO;
     //요청목록을 보기위한 메서드
     @PostMapping("/display")
     public List<OrderDTO> display(@RequestBody ItemStockRequest request) {
+        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+            return null;
+        }
         String affiliationCode = request.getAffiliationCode();
 
         return orderDAO.displayByAffiliationCode(affiliationCode);
@@ -39,6 +46,9 @@ public class OderingController {
     public String request(@RequestBody ItemStockRequest request,
                           @RequestParam("item_id") int itemId,
                           @RequestParam("quantity") int quantity) {
+        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+            return "권한이 없습니다.";
+        }
         try {
             OrderDTO order = new OrderDTO();
             order.setItemId(itemId);
@@ -54,6 +64,9 @@ public class OderingController {
 
     @PostMapping("/accept")
     public String accept(@RequestBody ItemStockRequest request, @RequestParam int order_id) {
+        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+            return "권한이 없습니다.";
+        }
         try {
 
             if (customProperties.getAffiliationCode().equals(request.getAffiliationCode())) {
@@ -68,6 +81,9 @@ public class OderingController {
 
     @PostMapping("/dismissed")
     public String dismissed(@RequestBody ItemStockRequest request, @RequestParam int order_id) {
+        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+            return "권한이 없습니다.";
+        }
         try {
             if (customProperties.getAffiliationCode().equals(request.getAffiliationCode())) {
                 int result = orderDAO.updateState(order_id, "dismissed");
@@ -81,6 +97,9 @@ public class OderingController {
 
     @PostMapping("/completed")
     public String completed(@RequestBody ItemStockRequest request, @RequestParam int order_id) {
+        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+            return "권한이 없습니다.";
+        }
         try {
             OrderDTO orderDTO = orderDAO.findById(order_id);
             // ToDo: 내부 처리 서비스 로직으로 이전 예정
@@ -100,6 +119,9 @@ public class OderingController {
 
     @PostMapping("/review")
     public String review(@RequestBody ItemStockRequest request, @RequestParam int order_id) {
+        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+            return "권한이 없습니다.";
+        }
         try {
             int result = orderDAO.updateState(order_id, "re-review-needed");
             return result > 0 ? "재검토 요청이 발송되었습니다." : "Failed to update order.";

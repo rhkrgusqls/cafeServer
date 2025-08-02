@@ -1,6 +1,7 @@
 package main.controller;
 
 import main.model.auth.AuthServiceDefault;
+import main.model.auth.AuthServiceSession;
 import main.model.db.dto.login.LoginRequest;
 import main.model.db.dto.login.LoginResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +19,14 @@ import main.exception.LoginException;
 public class LoginController {
 
     @Autowired
-    private AuthServiceDefault authServiceDefault;
+    private AuthServiceSession authServiceSession;
 
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest request) {
         try {
             //로그인시도
             return new LoginResponse(
-                            authServiceDefault.login(
+                    authServiceSession.login(
                                     request.getAffiliationCode(),
                                     request.getPassword())
                             ,"로그인 성공");

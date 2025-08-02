@@ -1,9 +1,11 @@
 package main.controller;
 
 import main.exception.DeleteAffiliationException;
+import main.model.auth.AuthServiceSession;
 import main.model.db.dao.ItemDAO;
 import main.model.db.dto.db.ItemDTO;
 import main.model.db.dto.db.ItemStockDTO;
+import main.properties.CustomProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,12 @@ public class ItemController {
     @Autowired
     private ItemDAO itemDAO;
 
+    @Autowired
+    private AuthServiceSession authServiceSession;
+
+    @Autowired
+    private CustomProperties customProperties;
+
     @GetMapping("/list")
     public List<ItemDTO> getItemList() {
         return itemDAO.getItemList();
@@ -25,6 +33,9 @@ public class ItemController {
 
     @PostMapping("/add")
     public String getItemList(@RequestBody ItemDTO itemDTO) {
+        if(!authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+            return "권한이 없습니다.";
+        }
         try {
             itemDAO.insertItem(itemDTO);
             return "추가 성공";

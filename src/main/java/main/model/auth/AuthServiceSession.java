@@ -6,16 +6,20 @@ import main.model.db.dao.AffiliationDAO;
 import main.model.db.dto.db.AffiliationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import jakarta.servlet.http.HttpSession;
 
-@Service("authServiceDefault")
-public class AuthServiceDefault implements AuthService {
+@Service("authServiceSession")
+public class AuthServiceSession implements AuthService {
 
-    private AffiliationDAO affiliationDAO;
+    private final HttpSession session;
 
     @Autowired
-    AuthServiceDefault(AffiliationDAO affiliationDAO) {
+    AuthServiceSession(AffiliationDAO affiliationDAO, HttpSession session) {
         this.affiliationDAO = affiliationDAO;
+        this.session = session;
     }
+
+    private AffiliationDAO affiliationDAO;
 
     // 로그인용 메서드
     @Override
@@ -30,12 +34,17 @@ public class AuthServiceDefault implements AuthService {
             throw new LoginException("비밀번호가 올바르지 않습니다.");
         }
 
+        // 로그인 성공 시 세션에 사용자 정보 저장
+        session.setAttribute("loginUser", affiliation);
+        session.setAttribute("loginId", affiliation.getAffiliationCode());
+
         return true;
     }
+
     // 로그인 확인용 메서드
     @Override
-    public boolean authenticate(){
-
+    public boolean authenticate() {
+        // 세션에서 로그인 정보 조회
         return true;
     }
 
@@ -45,14 +54,21 @@ public class AuthServiceDefault implements AuthService {
         AffiliationDTO affiliation = new AffiliationDTO();
         affiliation.setAffiliationCode(affiliationCode);
         affiliation.setPassword(password);
-        affiliation.setStoreName(storeName);  // 점포명 세팅
-
+        affiliation.setStoreName(storeName);
         try {
             affiliationDAO.insertAffiliation(affiliation);
             return true;
         } catch (Exception e) {
-            // 예외 발생 시 사용자 정의 예외로 래핑 후 던짐
             throw new SignupException("점포 코드 중복 또는 데이터베이스 오류: " + affiliationCode, e);
         }
+    }
+
+    public void logout() {
+        session.invalidate();
+    }
+
+    public String getSessionUser() {
+        AffiliationDTO user = (AffiliationDTO) session.getAttribute("loginUser");
+        return user.getAffiliationCode();
     }
 }
