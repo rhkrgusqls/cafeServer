@@ -45,7 +45,7 @@ public class AffiliationListController {
     @DeleteMapping("/delete")
     public String deleteAffiliation(@RequestParam String affiliationCode) {
 
-        if(!authServiceSession.getSessionUser().equals(affiliationCode) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+        if(!authServiceSession.getSessionUser().equals(affiliationCode) && !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
             return "삭제하려는 점포가 본인의 점포가 아닙니다.";
         }
 

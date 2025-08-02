@@ -34,7 +34,7 @@ public class OderingController {
     //요청목록을 보기위한 메서드
     @PostMapping("/display")
     public List<OrderDTO> display(@RequestBody ItemStockRequest request) {
-        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) && !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
             return null;
         }
         String affiliationCode = request.getAffiliationCode();
@@ -46,7 +46,7 @@ public class OderingController {
     public String request(@RequestBody ItemStockRequest request,
                           @RequestParam("item_id") int itemId,
                           @RequestParam("quantity") int quantity) {
-        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) && !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
             return "권한이 없습니다.";
         }
         try {
@@ -64,7 +64,7 @@ public class OderingController {
 
     @PostMapping("/accept")
     public String accept(@RequestBody ItemStockRequest request, @RequestParam int order_id) {
-        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) && !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
             return "권한이 없습니다.";
         }
         try {
@@ -81,7 +81,7 @@ public class OderingController {
 
     @PostMapping("/dismissed")
     public String dismissed(@RequestBody ItemStockRequest request, @RequestParam int order_id) {
-        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) && !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
             return "권한이 없습니다.";
         }
         try {
@@ -97,7 +97,7 @@ public class OderingController {
 
     @PostMapping("/completed")
     public String completed(@RequestBody ItemStockRequest request, @RequestParam int order_id) {
-        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) && !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
             return "권한이 없습니다.";
         }
         try {
@@ -119,7 +119,7 @@ public class OderingController {
 
     @PostMapping("/review")
     public String review(@RequestBody ItemStockRequest request, @RequestParam int order_id) {
-        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) && !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
             return "권한이 없습니다.";
         }
         try {
