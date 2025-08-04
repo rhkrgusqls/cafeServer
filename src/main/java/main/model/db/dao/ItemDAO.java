@@ -41,6 +41,7 @@ public class ItemDAO {
             item.setItemId(rs.getInt("item_id"));
             item.setName(rs.getString("name"));
             item.setCategory(rs.getString("category"));
+            item.setState(rs.getString("state"));
             return item;
         });
     }
@@ -65,4 +66,8 @@ public class ItemDAO {
         });
     }
 
+    public int updateItemState(int itemId, String state) {
+        String sql = "UPDATE item SET state = ? WHERE item_id = ?";
+        return jdbcTemplate.update(sql, state, itemId);
+    }
 }

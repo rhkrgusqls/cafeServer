@@ -63,4 +63,19 @@ public class ItemController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("예기치 못한 오류가 발생");
         }
     }
+
+    @GetMapping("/setState")
+    public ResponseEntity<String> setState(@RequestParam int itemId, @RequestParam String state) {
+        if(!authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한이 없습니다.");
+        }
+        try {
+            itemDAO.updateItemState(itemId, state);
+            return ResponseEntity.ok("상태 변환에 성공했습니다.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("예기치 못한 오류가 발생");
+        }
+    }
+
 }
