@@ -62,10 +62,10 @@ public class OrderDAO {
     }
 
     /** affiliation_code로 묶어 item_id별 quantity 합산 조회*/
-    public List<Map<String, Object>> getQuantityByItem(int affiliationCode) {
+    public List<Map<String, Object>> getQuantityByItem(String affiliationCode) {
         String sql = "SELECT item_id, SUM(quantity) AS total_quantity " +
-                "FROM _order o JOIN user u ON o.id = u.id " +
-                "WHERE u.affiliation_code = ? " +
+                "FROM _order " +
+                "WHERE affiliation_code = ? " +
                 "GROUP BY item_id";
         return jdbcTemplate.queryForList(sql, affiliationCode);
     }
