@@ -5,8 +5,12 @@ import main.model.auth.AuthServiceSession;
 import main.model.db.dao.ItemDAO;
 import main.model.db.dto.db.ItemDTO;
 import main.model.db.dto.db.ItemStockDTO;
+import main.model.db.dto.itemQuantity.ItemQuantityRequest;
+import main.model.db.dto.itemQuantity.ItemQuantityResponse;
 import main.properties.CustomProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,6 +47,20 @@ public class ItemController {
             return e.getMessage();
         } catch (Exception e) {
             return "예기치 못한 오류가 발생했습니다.";
+        }
+    }
+    @PostMapping("/quantity")
+    public ResponseEntity<?> getItemQuantity(@RequestBody ItemQuantityRequest request) {
+        // 세션의 사용자와 요청의 affiliationCode 일치 여부 확인
+        if (!authServiceSession.getSessionUser().equals(request.getAffiliationCode())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한이 없습니다.");
+        }
+
+        try {
+            List<ItemQuantityResponse> results = itemDAO.getItemQuantityByItemAndAffiliation(request);
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("예기치 못한 오류가 발생");
         }
     }
 }

@@ -1,6 +1,8 @@
 package main.model.db.dao;
 
 import main.model.db.dto.db.ItemDTO;
+import main.model.db.dto.itemQuantity.ItemQuantityRequest;
+import main.model.db.dto.itemQuantity.ItemQuantityResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -42,4 +44,25 @@ public class ItemDAO {
             return item;
         });
     }
+
+    public List<ItemQuantityResponse> getItemQuantityByItemAndAffiliation(ItemQuantityRequest request) {
+        String sql = """
+        SELECT i.item_id, i.name, i.category, IFNULL(SUM(s.quantity), 0) AS quantity
+        FROM item i
+        LEFT JOIN item_stock s 
+          ON i.item_id = s.item_id AND s.affiliation_code = ?
+        WHERE i.item_id = ?
+        GROUP BY i.item_id, i.name, i.category
+        """;
+
+        return jdbcTemplate.query(sql, new Object[]{request.getAffiliationCode(), request.getItemId()}, (rs, rowNum) -> {
+            ItemQuantityResponse result = new ItemQuantityResponse();
+            result.setItemId(rs.getInt("item_id"));
+            result.setName(rs.getString("name"));
+            result.setCategory(rs.getString("category"));
+            result.setQuantity(rs.getInt("quantity"));
+            return result;
+        });
+    }
+
 }
