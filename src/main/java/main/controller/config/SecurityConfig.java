@@ -13,7 +13,7 @@ public class SecurityConfig {
 
         http
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/auth/login") // 이 URL은 CSRF 검사 안함
+                .ignoringRequestMatchers("/**") // 이 URL은 CSRF 검사 안함
             )
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().permitAll()
