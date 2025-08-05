@@ -249,7 +249,7 @@ public class ItemStockDAO {
         // 2. 출고 대상 재고 조회 (FIFO)
         String sql = "SELECT stock_id, quantity, expire_date, status FROM item_stock " +
                 "WHERE item_id = ? AND affiliation_code = ? AND status = 'available' AND quantity > 0 " +
-                "ORDER BY received_date ASC";
+                "ORDER BY expire_date ASC";
 
         var stocks = jdbcTemplate.queryForList(sql, itemId, fromAffiliationCode);
 
