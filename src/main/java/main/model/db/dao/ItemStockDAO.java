@@ -41,8 +41,8 @@ public class ItemStockDAO {
      * 새 아이템 스톡 데이터 생성
      */
     public int insertItemStock(ItemStockDTO stock) {
-        String sql = "INSERT INTO item_stock (stock_id, item_id, quantity, expire_date, received_date, status, affiliation_code) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, stock.getStockId(), stock.getItemId(), stock.getQuantity(),
+        String sql = "INSERT INTO item_stock (item_id, quantity, expire_date, received_date, status, affiliation_code) VALUES (?, ?, ?, ?, ?, ?)";
+        return jdbcTemplate.update(sql, stock.getItemId(), stock.getQuantity(),
                 stock.getExpireDate(), stock.getReceivedDate(), stock.getStatus(), stock.getAffiliationCode());
     }
 
@@ -233,13 +233,17 @@ public class ItemStockDAO {
 
     @Transactional
     public void transferStock(int itemId, String fromAffiliationCode, String toAffiliationCode, int quantityToTransfer) {
+        System.out.println("[transferStock] Input Params -> itemId: " + itemId +
+                ", fromAffiliationCode: " + fromAffiliationCode +
+                ", toAffiliationCode: " + toAffiliationCode +
+                ", quantityToTransfer: " + quantityToTransfer);
         // 1. 출고 가능 재고 총량 검사
         int totalAvailable = getAvailableQuantity(itemId, fromAffiliationCode);
         if (totalAvailable < quantityToTransfer) {
             throw new InsufficientStockException("Not enough stock to transfer. Available: " +
                     totalAvailable + ", Requested: " + quantityToTransfer);
         }
-
+        System.out.println("[transferStock] itemId=" + itemId + ", fromAffiliationCode=" + fromAffiliationCode + ", totalAvailable=" + totalAvailable + ", requested=" + quantityToTransfer);
         // 2. 출고 대상 재고 조회 (FIFO)
         String sql = "SELECT stock_id, quantity, expire_date, status FROM item_stock " +
                 "WHERE item_id = ? AND affiliation_code = ? AND status = 'available' AND quantity > 0 " +
@@ -259,6 +263,9 @@ public class ItemStockDAO {
             Timestamp expireDate = (Timestamp) stock.get("expire_date");
             String status = (String) stock.get("status");
 
+            System.out.println("[transferStock] Processing stockId=" + stockId + ", currentQuantity=" + currentQuantity + ", remainingToTransfer=" + remainingToTransfer);
+
+
             int quantityUsed = Math.min(currentQuantity, remainingToTransfer);
 
             // 출고 재고 정보 생성 (toAffiliationCode로 입고할 때 사용할 것)
@@ -274,23 +281,31 @@ public class ItemStockDAO {
 
             // 4. 기존 재고 차감 처리
             if (currentQuantity <= quantityUsed) {
+                System.out.println("[transferStock] Depleting stockId=" + stockId);
                 jdbcTemplate.update("UPDATE item_stock SET quantity = 0, status = 'depleted' WHERE stock_id = ?", stockId);
             } else {
                 int newQuantity = currentQuantity - quantityUsed;
+                System.out.println("[transferStock] Updating stockId=" + stockId + " newQuantity=" + newQuantity);
                 jdbcTemplate.update("UPDATE item_stock SET quantity = ? WHERE stock_id = ?", newQuantity, stockId);
             }
 
             remainingToTransfer -= quantityUsed;
         }
-
+        System.out.println("[transferStock] Finished processing existing stocks, inserting new stock records");
         // 5. 입고 처리
         for (ItemStockDTO insertStock : stocksToInsert) {
+            insertStock.setAffiliationCode(toAffiliationCode);
+            System.out.println("[transferStock] Inserting new stock: itemId=" + insertStock.getItemId()
+                    + ", quantity=" + insertStock.getQuantity()
+                    + ", expireDate=" + insertStock.getExpireDate()
+                    + ", status=" + insertStock.getStatus()
+                    + ", affiliationCode=" + insertStock.getAffiliationCode());
             int result = insertItemStock(insertStock);
             if (result <= 0) {
                 throw new RuntimeException("Failed to insert stock for transfer");
             }
         }
+        System.out.println("[transferStock] Completed successfully");
     }
-
 }
 

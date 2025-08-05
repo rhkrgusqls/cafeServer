@@ -41,7 +41,6 @@ public class ItemDAO {
             item.setItemId(rs.getInt("item_id"));
             item.setName(rs.getString("name"));
             item.setCategory(rs.getString("category"));
-            item.setState(rs.getString("state"));
             return item;
         });
     }

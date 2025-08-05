@@ -128,7 +128,7 @@ public class OderingController {
             itemStockDAO.transferStock(
                     orderDTO.getItemId(),
                     customProperties.getAffiliationCode(),
-                    orderDTO.getAffiliationCode(),
+                    authServiceSession.getSessionUser(),
                     orderDTO.getQuantity()
             );
 
