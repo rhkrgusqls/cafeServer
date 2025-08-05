@@ -4,7 +4,6 @@ import main.model.auth.AuthServiceSession;
 import main.model.db.dao.ItemStockDAO;
 import main.model.db.dao.OrderDAO;
 import main.model.db.dao.OrderRejectionHistoryDAO;
-import main.model.db.dto.db.ItemStockDTO;
 import main.model.db.dto.db.OrderDTO;
 import main.model.db.dto.db.OrderRejectionHistoryDTO;
 import main.model.db.dto.itemStockList.ItemStockRequest;
@@ -20,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/ordering")
-public class OderingController {
+public class OrderingController {
 
     @Autowired
     private OrderDAO orderDAO;
