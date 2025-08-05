@@ -3,8 +3,10 @@ package main.controller;
 import main.model.auth.AuthServiceSession;
 import main.model.db.dao.ItemStockDAO;
 import main.model.db.dao.OrderDAO;
+import main.model.db.dao.OrderRejectionHistoryDAO;
 import main.model.db.dto.db.ItemStockDTO;
 import main.model.db.dto.db.OrderDTO;
+import main.model.db.dto.db.OrderRejectionHistoryDTO;
 import main.model.db.dto.itemStockList.ItemStockRequest;
 import main.properties.CustomProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,10 @@ public class OderingController {
 
     @Autowired
     private ItemStockDAO itemStockDAO;
+
+    @Autowired
+    private OrderRejectionHistoryDAO orderRejectionHistoryDAO;
+
     //요청목록을 보기위한 메서드
     @PostMapping("/display")
     public List<OrderDTO> display(@RequestBody ItemStockRequest request) {
@@ -80,14 +86,30 @@ public class OderingController {
     }
 
     @PostMapping("/dismissed")
-    public String dismissed(@RequestBody ItemStockRequest request, @RequestParam int order_id) {
-        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) && !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+    public String dismissed(@RequestBody ItemStockRequest request,
+                            @RequestParam int order_id,
+                            @RequestParam String reason,
+                            @RequestParam(required = false) String notes) {
+        if (!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) &&
+                !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
             return "권한이 없습니다.";
         }
+
         try {
             if (customProperties.getAffiliationCode().equals(request.getAffiliationCode())) {
+                // 상태 변경
                 int result = orderDAO.updateState(order_id, "dismissed");
-                return result > 0 ? "요청이 파기되었습니다." : "Failed to update order.";
+
+                // 거절 이력 저장
+                OrderRejectionHistoryDTO dto = new OrderRejectionHistoryDTO();
+                dto.setOrderId(order_id);
+                dto.setRejectionReason(reason);
+                dto.setRejectionTime(new Timestamp(System.currentTimeMillis()).toString());
+                dto.setNotes(notes);
+
+                orderRejectionHistoryDAO.insert(dto);
+
+                return result > 0 ? "요청이 거절되었습니다." : "Failed to update order.";
             }
             return "Unauthorized to dismiss order.";
         } catch (Exception e) {
@@ -129,4 +151,16 @@ public class OderingController {
             return "예기치 못한 오류가 발생했습니다.";
         }
     }
+
+    @GetMapping("/reject-count")
+    public int getRejectionCount() {
+        return orderRejectionHistoryDAO.getRejectionCountByAffiliationCode(authServiceSession.getSessionUser());
+    }
+
+    /** 주문 ID로 거절 이력 조회 */
+    @GetMapping("/rejections")
+    public List<OrderRejectionHistoryDTO> getRejectionsByOrderId() {
+        return orderRejectionHistoryDAO.findByAffiliationCode(authServiceSession.getSessionUser());
+    }
+
 }

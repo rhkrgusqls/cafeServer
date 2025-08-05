@@ -46,7 +46,7 @@ public class ItemDAO {
         });
     }
 
-    public List<ItemQuantityResponse> getItemQuantityByItemAndAffiliation(ItemQuantityRequest request) {
+    public List<ItemQuantityResponse> getItemQuantityByItemAndAffiliation(int itemId, String affiliationCode) {
         String sql = """
         SELECT i.item_id, i.name, i.category, IFNULL(SUM(s.quantity), 0) AS quantity
         FROM item i
@@ -56,7 +56,7 @@ public class ItemDAO {
         GROUP BY i.item_id, i.name, i.category
         """;
 
-        return jdbcTemplate.query(sql, new Object[]{request.getAffiliationCode(), request.getItemId()}, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, new Object[]{affiliationCode, itemId}, (rs, rowNum) -> {
             ItemQuantityResponse result = new ItemQuantityResponse();
             result.setItemId(rs.getInt("item_id"));
             result.setName(rs.getString("name"));
@@ -66,6 +66,8 @@ public class ItemDAO {
         });
     }
 
+
+    //available , unavailable
     public int updateItemState(int itemId, String state) {
         String sql = "UPDATE item SET state = ? WHERE item_id = ?";
         return jdbcTemplate.update(sql, state, itemId);
