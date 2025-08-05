@@ -41,9 +41,11 @@ public class ItemStockDAO {
      * 새 아이템 스톡 데이터 생성
      */
     public int insertItemStock(ItemStockDTO stock) {
-        String sql = "INSERT INTO item_stock (item_id, quantity, expire_date, received_date, status, affiliation_code) VALUES (?, ?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, stock.getItemId(), stock.getQuantity(),
-                stock.getExpireDate(), stock.getReceivedDate(), stock.getStatus(), stock.getAffiliationCode());
+        String sql = "INSERT INTO item_stock (item_id, quantity, expire_date, affiliation_code) VALUES (?, ?, ?, ?)";
+        return jdbcTemplate.update(sql, stock.getItemId(),
+                stock.getQuantity(),
+                stock.getExpireDate(),
+                stock.getAffiliationCode());
     }
 
     /**
