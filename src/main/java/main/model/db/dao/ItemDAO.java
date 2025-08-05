@@ -67,9 +67,27 @@ public class ItemDAO {
     }
 
 
-    //available , unavailable
+// 반드시 jdbcTemplate이 이 클래스 안에 존재해야 함
     public int updateItemState(int itemId, String state) {
-        String sql = "UPDATE item SET state = ? WHERE item_id = ?";
-        return jdbcTemplate.update(sql, state, itemId);
+        if (!state.equals("available") && !state.equals("unavailable")) {
+            throw new IllegalArgumentException("Invalid state: " + state);
+        }
+        System.out.println("Updating itemId: " + itemId + " with state: " + state);
+        // item 상태 업데이트
+        String updateItemSql = "UPDATE item SET state = ? WHERE item_id = ?";
+        int itemUpdateCount = jdbcTemplate.update(updateItemSql, state, itemId);
+
+        // item_stock 상태도 함께 변경
+        String updateStockSql;
+        int stockUpdateCount;
+
+        if (state.equals("unavailable")) {
+            updateStockSql = "UPDATE item_stock SET status = 'defective' WHERE item_id = ? AND status = 'available'";
+        } else {
+            updateStockSql = "UPDATE item_stock SET status = 'available' WHERE item_id = ? AND status = 'defective'";
+        }
+        stockUpdateCount = jdbcTemplate.update(updateStockSql, itemId);
+
+        return itemUpdateCount + stockUpdateCount;
     }
 }
