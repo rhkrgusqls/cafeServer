@@ -35,12 +35,13 @@ public class ItemDAO {
     }
 
     public List<ItemDTO> getItemList() {
-        String sql = "SELECT item_id, name, category FROM item";
+        String sql = "SELECT item_id, name, category, state FROM item";
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             ItemDTO item = new ItemDTO();
             item.setItemId(rs.getInt("item_id"));
             item.setName(rs.getString("name"));
             item.setCategory(rs.getString("category"));
+            item.setState(rs.getString("state"));
             return item;
         });
     }
