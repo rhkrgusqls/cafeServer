@@ -1,5 +1,6 @@
 package main.model.db.dao;
 
+import main.exception.InsertItemStockException;
 import main.model.db.dto.db.ItemStockDTO;
 import main.model.db.dto.itemStockList.JoinedItemStockDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,11 +42,37 @@ public class ItemStockDAO {
      * 새 아이템 스톡 데이터 생성
      */
     public int insertItemStock(ItemStockDTO stock) {
-        String sql = "INSERT INTO item_stock (item_id, quantity, expire_date, affiliation_code) VALUES (?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, stock.getItemId(),
-                stock.getQuantity(),
-                stock.getExpireDate(),
-                stock.getAffiliationCode());
+        try {
+            String sql = "INSERT INTO item_stock (item_id, quantity, expire_date, affiliation_code) VALUES (?, ?, ?, ?)";
+            return jdbcTemplate.update(sql,
+                    stock.getItemId(),
+                    stock.getQuantity(),
+                    stock.getExpireDate(),
+                    stock.getAffiliationCode());
+
+        } catch (Exception e) {
+            Throwable cause = e.getCause();
+
+            while (cause != null) {
+                if (cause instanceof java.sql.SQLIntegrityConstraintViolationException
+                        || (cause.getMessage() != null && cause.getMessage().contains("Duplicate entry"))) {
+                    throw new InsertItemStockException("중복된 항목으로 인해 추가 실패했습니다.",
+                            InsertItemStockException.Reason.DUPLICATE_KEY, e);
+                }
+
+                if (cause instanceof java.sql.SQLNonTransientConnectionException
+                        || (cause.getMessage() != null && cause.getMessage().contains("Communications link failure"))) {
+                    throw new InsertItemStockException("DB 연결 실패",
+                            InsertItemStockException.Reason.CONNECTION_FAILURE, e);
+                }
+
+                cause = cause.getCause();
+            }
+
+            // 알 수 없는 예외
+            throw new InsertItemStockException("알 수 없는 이유로 DB insert 실패",
+                    InsertItemStockException.Reason.UNKNOWN, e);
+        }
     }
 
     /**

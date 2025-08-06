@@ -1,5 +1,6 @@
 package main.controller;
 
+import main.exception.InsertItemStockException;
 import main.model.auth.AuthServiceSession;
 import main.model.db.dao.ItemStockDAO;
 import main.model.db.dto.db.ItemStockDTO;
@@ -33,48 +34,69 @@ public class ItemStockContoller {
             @RequestBody(required = false) ItemStockRequest request,
             @RequestParam(required = false) String state) {
 
-        if(!authServiceSession.getSessionUser().equals(request.getAffiliationCode()) && !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
-            return null;
-        }
+        try {
+            if (request == null || request.getAffiliationCode() == null) {
+                return null;
+            }
 
-        if (state == null || state.isEmpty()) {
-            return itemStockDAO.getItemStockList(request.getAffiliationCode());
-        } else {
-            return itemStockDAO.getItemStockList(request.getAffiliationCode(), state);
+            String sessionUser = authServiceSession.getSessionUser();
+            String currentAffiliation = request.getAffiliationCode();
+
+            if (!sessionUser.equals(currentAffiliation) && !sessionUser.equals(customProperties.getAffiliationCode())) {
+                return null;
+            }
+
+            if (state == null || state.isEmpty()) {
+                return itemStockDAO.getItemStockList(currentAffiliation);
+            } else {
+                return itemStockDAO.getItemStockList(currentAffiliation, state);
+            }
+
+        } catch (Exception e) {
+            return null;
         }
     }
 
     @PostMapping("/listAll")
     public List<JoinedItemStockDTO> getAllItemStockList(
             @RequestParam(required = false) String state) {
-        if(!authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+
+        try {
+            String sessionUser = authServiceSession.getSessionUser();
+
+            if (!sessionUser.equals(customProperties.getAffiliationCode())) {
+                return null;
+            }
+
+            if (state == null || state.isEmpty()) {
+                return itemStockDAO.getAllItemStockList();
+            } else {
+                return itemStockDAO.getAllItemStockList(state);
+            }
+
+        } catch (Exception e) {
             return null;
-        }
-        if (state == null || state.isEmpty()) {
-            return itemStockDAO.getAllItemStockList();
-        } else {
-            return itemStockDAO.getAllItemStockList(state);
         }
     }
 
-    // 추가 (Create)
-    //ToDo : 약간의 검토 필요(물자를 추가할때 입고일이 다르다고 분립을 시킬것인지 기존 데이터에 병합시킬것인지 만약 병합시키지 않는다면 표시하는쪽에서 나눠서 표시할것인지 합쳐서 표기할것인지)
     @PostMapping("/add")
     public String addItemStock(@RequestBody ItemStockDTO itemStock) {
-        if(!authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+        if (!authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
             return "권한이 없습니다.";
         }
+
         try {
             itemStock.setAffiliationCode(authServiceSession.getSessionUser());
             int result = itemStockDAO.insertItemStock(itemStock);
             return result > 0 ? "물자추가 성공" : "추가 실패";
+
+        } catch (InsertItemStockException e) {
+            return e.getMessage();
         } catch (Exception e) {
             return "예기치 못한 오류가 발생했습니다.";
         }
     }
 
-    // 수정 (Update quantity + status 둘 다 가능하게)
-    //ToDo:
     @GetMapping("/update")
     public String updateItemStock(@RequestParam int stockId,
                                   @RequestParam(required = false) Integer quantity,
@@ -100,7 +122,6 @@ public class ItemStockContoller {
         }
     }
 
-    // 삭제 (Delete)
     @GetMapping("/delete")
     public String deleteItemStock(@RequestParam int stockId) {
         if(!authServiceSession.getSessionUser().equals(itemStockDAO.findById(stockId).getAffiliationCode()) && !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
@@ -114,10 +135,9 @@ public class ItemStockContoller {
         }
     }
 
-    // 재고 감소
     @GetMapping("/decrease")
     public String decreaseStock(@RequestParam int itemId, @RequestParam String affiliationCode, @RequestParam int quantity) {
-        if(!authServiceSession.getSessionUser().equals(affiliationCode) || !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
+        if(!authServiceSession.getSessionUser().equals(affiliationCode) && !authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
             return "권한이 없습니다.";
         }
         try {
