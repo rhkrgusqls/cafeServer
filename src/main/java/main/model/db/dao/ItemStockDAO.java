@@ -5,6 +5,7 @@ import main.log.db.dao.LogDAO;
 import main.model.db.dto.db.ItemStockDTO;
 import main.model.db.dto.itemStockList.JoinedItemStockDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +13,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 import main.exception.InsufficientStockException;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,51 +89,110 @@ public class ItemStockDAO {
         }
     }
 
+    /**
+     * 물량, 상태 수정
+     */
     public int updateItemStock(int stockId, int quantity, String status) {
-        String sql = "UPDATE item_stock SET quantity = ?, status = ? WHERE stock_id = ?";
-        int result = jdbcTemplate.update(sql, quantity, status, stockId);
+        String selectSql = "SELECT item_id, quantity, status, affiliation_code FROM item_stock WHERE stock_id = ?";
+        Map<String, Object> stockInfo;
+
+        try {
+            stockInfo = jdbcTemplate.queryForMap(selectSql, stockId);
+        } catch (EmptyResultDataAccessException e) {
+            return 0;
+        }
+
+        int currentQuantity = ((Number) stockInfo.get("quantity")).intValue();
+        String currentStatus = (String) stockInfo.get("status");
+
+        // 변경사항이 없으면 아무것도 하지 않음
+        if (currentQuantity == quantity && Objects.equals(currentStatus, status)) {
+            return 0;
+        }
+
+        String updateSql = "UPDATE item_stock SET quantity = ?, status = ? WHERE stock_id = ?";
+        int result = jdbcTemplate.update(updateSql, quantity, status, stockId);
 
         if (result > 0) {
-            String query = "SELECT item_id, affiliation_code FROM item_stock WHERE stock_id = ?";
-            Map<String, Object> stockInfo = jdbcTemplate.queryForMap(query, stockId);
             int itemId = ((Number) stockInfo.get("item_id")).intValue();
             String affiliationCode = (String) stockInfo.get("affiliation_code");
 
             logDAO.insertChangeLog(itemId, quantity, "MODIFY", affiliationCode, new java.util.Date());
         }
+
         return result;
     }
 
+
+    /**
+     * 물량 수정
+     */
     public int updateItemStock(int stockId, int quantity) {
-        String sql = "UPDATE item_stock SET quantity = ? WHERE stock_id = ?";
-        int result = jdbcTemplate.update(sql, quantity, stockId);
+        String selectSql = "SELECT item_id, quantity, affiliation_code FROM item_stock WHERE stock_id = ?";
+        Map<String, Object> stockInfo;
+
+        try {
+            stockInfo = jdbcTemplate.queryForMap(selectSql, stockId);
+        } catch (EmptyResultDataAccessException e) {
+            return 0;
+        }
+
+        int currentQuantity = ((Number) stockInfo.get("quantity")).intValue();
+
+        if (currentQuantity == quantity) {
+            return 0;
+        }
+
+        String updateSql = "UPDATE item_stock SET quantity = ? WHERE stock_id = ?";
+        int result = jdbcTemplate.update(updateSql, quantity, stockId);
 
         if (result > 0) {
-            String query = "SELECT item_id, affiliation_code FROM item_stock WHERE stock_id = ?";
-            Map<String, Object> stockInfo = jdbcTemplate.queryForMap(query, stockId);
             int itemId = ((Number) stockInfo.get("item_id")).intValue();
             String affiliationCode = (String) stockInfo.get("affiliation_code");
 
             logDAO.insertChangeLog(itemId, quantity, "MODIFY", affiliationCode, new java.util.Date());
         }
+
         return result;
     }
 
+
+    /**
+     * 상태 수정
+     * 유효상태 available, 불량 재고상태 defective, 재고 없음 상태 depleted
+     */
     public int updateItemStock(int stockId, String status) {
-        String sql = "UPDATE item_stock SET status = ? WHERE stock_id = ?";
-        int result = jdbcTemplate.update(sql, status, stockId);
+        String selectSql = "SELECT item_id, quantity, status, affiliation_code FROM item_stock WHERE stock_id = ?";
+        Map<String, Object> stockInfo;
+
+        try {
+            stockInfo = jdbcTemplate.queryForMap(selectSql, stockId);
+        } catch (EmptyResultDataAccessException e) {
+            // 해당 stockId가 존재하지 않으면 처리하지 않음
+            return 0;
+        }
+
+        String currentStatus = (String) stockInfo.get("status");
+
+        // 상태가 바뀌지 않았으면 업데이트, 로그 모두 생략
+        if (Objects.equals(currentStatus, status)) {
+            return 0;
+        }
+
+        String updateSql = "UPDATE item_stock SET status = ? WHERE stock_id = ?";
+        int result = jdbcTemplate.update(updateSql, status, stockId);
 
         if (result > 0) {
-            String query = "SELECT item_id, quantity, affiliation_code FROM item_stock WHERE stock_id = ?";
-            Map<String, Object> stockInfo = jdbcTemplate.queryForMap(query, stockId);
             int itemId = ((Number) stockInfo.get("item_id")).intValue();
             int quantity = ((Number) stockInfo.get("quantity")).intValue();
             String affiliationCode = (String) stockInfo.get("affiliation_code");
 
             logDAO.insertChangeLog(itemId, quantity, "MODIFY", affiliationCode, new java.util.Date());
         }
+
         return result;
     }
+
 
     /**
      * 특정 점포에 있는 특정 아이템의 가용 가능수량 전체 데이터 조회
@@ -186,7 +248,7 @@ public class ItemStockDAO {
             throw new RuntimeException("Failed to insert consumption log");
         }
 
-        int changeLogCount = logDAO.insertChangeLog(itemId, quantityToDecrease, "USAGE", affiliationCode, new java.util.Date());
+        int changeLogCount = logDAO.insertChangeLog(itemId, quantityToDecrease * -1, "USAGE", affiliationCode, new java.util.Date());
         if (changeLogCount <= 0) {
             throw new RuntimeException("Failed to insert inventory change log");
         }
@@ -315,7 +377,7 @@ public class ItemStockDAO {
 
         // 3. 폐기 로그 기록 (재고 변화 로그)
         if (result > 0) {
-            logDAO.insertChangeLog(itemId, quantity, "DISPOSAL", affiliationCode, new java.util.Date());
+            logDAO.insertChangeLog(itemId, quantity * -1, "DISPOSAL", affiliationCode, new java.util.Date());
         }
 
         return result;
@@ -399,7 +461,7 @@ public class ItemStockDAO {
             }
         }
         logDAO.insertHeadquarterShipment(itemId, quantityToTransfer, toAffiliationCode, new java.util.Date());
-        logDAO.insertChangeLog(itemId, quantityToTransfer, "SHIPMENT", fromAffiliationCode, new java.util.Date());
+        logDAO.insertChangeLog(itemId, quantityToTransfer * -1, "SHIPMENT", fromAffiliationCode, new java.util.Date());
         logDAO.insertChangeLog(itemId, quantityToTransfer, "INBOUND", toAffiliationCode, new java.util.Date());
 
 
