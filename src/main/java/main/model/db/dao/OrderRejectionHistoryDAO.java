@@ -36,14 +36,27 @@ public class OrderRejectionHistoryDAO {
 
     /** order_id로 거절 이력 조회 */
     public List<OrderRejectionHistoryDTO> findByAffiliationCode(String affiliationCode) {
-        String sql = """
+        String sql;
+        Object[] args;
+
+        if (affiliationCode.equals("101")) {
+            sql = """
+        SELECT r.rejection_id, r.order_id, r.rejection_reason, r.rejection_time, r.notes
+        FROM order_rejection_history r
+        JOIN _order o ON r.order_id = o.order_id
+        """;
+            args = new Object[]{}; // 파라미터 없음
+        } else {
+            sql = """
         SELECT r.rejection_id, r.order_id, r.rejection_reason, r.rejection_time, r.notes
         FROM order_rejection_history r
         JOIN _order o ON r.order_id = o.order_id
         WHERE o.affiliation_code = ?
-    """;
+        """;
+            args = new Object[]{affiliationCode};
+        }
 
-        return jdbcTemplate.query(sql, new Object[]{affiliationCode}, this::mapRowToDto);
+        return jdbcTemplate.query(sql, args, this::mapRowToDto);
     }
 
     /** affiliation_code별 거절 횟수 조회 */
