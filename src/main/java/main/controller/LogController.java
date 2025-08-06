@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/logs")
@@ -28,42 +29,76 @@ public class LogController {
     @Autowired
     private LogDAO logDAO;
 
+    // 출고 리스트 조회 (점포 + 아이템)
     @GetMapping("/shipments")
-    public List<ShipmentDTO> getShipments(@RequestParam(required = false) String affiliationCode) {
+    public List<ShipmentDTO> getShipments(
+            @RequestParam(required = false) String affiliationCode,
+            @RequestParam int itemId
+    ) {
         String sessionAffiliationCode = authServiceSession.getSessionUser();
+
         if (affiliationCode == null) {
             affiliationCode = sessionAffiliationCode;
         } else if (!affiliationCode.equals(customProperties.getAffiliationCode())) {
-            // 세션 코드가 아닌 다른 점포코드 요청 시 세션 코드로 강제
             affiliationCode = sessionAffiliationCode;
         }
-        return logDAO.getAllShipmentsByAffiliation(affiliationCode);
+
+        return logDAO.getShipmentsByAffiliationAndItem(affiliationCode, itemId);
     }
 
+    // 소비량 조회 (점포 + 아이템)
     @GetMapping("/consumptions")
     public List<ConsumptionStatDTO> getConsumptions(
             @RequestParam String period,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) String affiliationCode,
+            @RequestParam int itemId
+    ) {
+        String sessionAffiliationCode = authServiceSession.getSessionUser();
+
+        if (affiliationCode == null) {
+            affiliationCode = sessionAffiliationCode;
+        } else if (!affiliationCode.equals(customProperties.getAffiliationCode())) {
+            affiliationCode = sessionAffiliationCode;
+        }
+
+        Date sqlStartDate = java.sql.Date.valueOf(startDate);
+
+        return logDAO.getConsumptionStatsByAffiliationAndItem(period, sqlStartDate, affiliationCode, itemId);
+    }
+
+    // 재고 변화 로그 조회 (점포 + 아이템)
+    @GetMapping("/changes")
+    public List<ChangeLogDTO> getInventoryChangeLogs(
+            @RequestParam(required = false) String affiliationCode,
+            @RequestParam int itemId
+    ) {
+        String sessionAffiliationCode = authServiceSession.getSessionUser();
+
+        if (affiliationCode == null) {
+            affiliationCode = sessionAffiliationCode;
+        } else if (!affiliationCode.equals(customProperties.getAffiliationCode())) {
+            affiliationCode = sessionAffiliationCode;
+        }
+
+        return logDAO.getInventoryChangeLogsByAffiliationAndItem(affiliationCode, itemId);
+    }
+
+    @GetMapping("/inventory-breakdown")
+    public List<Map<String, Integer>> getMonthlyInventoryBreakdown(
+            @RequestParam String month,          // "2025-08" 같은 형식
+            @RequestParam int itemId,
             @RequestParam(required = false) String affiliationCode
     ) {
         String sessionAffiliationCode = authServiceSession.getSessionUser();
+
         if (affiliationCode == null) {
             affiliationCode = sessionAffiliationCode;
         } else if (!affiliationCode.equals(customProperties.getAffiliationCode())) {
             affiliationCode = sessionAffiliationCode;
         }
-        Date sqlStartDate = java.sql.Date.valueOf(startDate);
-        return logDAO.getConsumptionStatsByAffiliation(period, sqlStartDate, affiliationCode);
+
+        return logDAO.getMonthlyInventoryBreakdown(month, itemId, Integer.parseInt(affiliationCode));
     }
 
-    @GetMapping("/changes")
-    public List<ChangeLogDTO> getInventoryChangeLogs(@RequestParam(required = false) String affiliationCode) {
-        String sessionAffiliationCode = authServiceSession.getSessionUser();
-        if (affiliationCode == null) {
-            affiliationCode = sessionAffiliationCode;
-        } else if (!affiliationCode.equals(customProperties.getAffiliationCode())) {
-            affiliationCode = sessionAffiliationCode;
-        }
-        return logDAO.getAllInventoryChangeLogsByAffiliation(affiliationCode);
-    }
 }
