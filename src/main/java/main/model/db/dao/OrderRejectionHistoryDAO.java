@@ -39,7 +39,7 @@ public class OrderRejectionHistoryDAO {
         String sql;
         Object[] args;
 
-        if (affiliationCode.equals("101")) {
+        if (affiliationCode.equals(customProperties.getAffiliationCode())) {
             sql = """
         SELECT r.rejection_id, r.order_id, r.rejection_reason, r.rejection_time, r.notes
         FROM order_rejection_history r
