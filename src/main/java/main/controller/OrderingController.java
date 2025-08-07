@@ -8,6 +8,7 @@ import main.model.db.dto.db.OrderDTO;
 import main.model.db.dto.db.OrderRejectionHistoryDTO;
 import main.model.db.dto.itemStockList.ItemStockRequest;
 import main.properties.CustomProperties;
+import main.refresh.RefreshWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +21,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/ordering")
 public class OrderingController {
+
+    @Autowired
+    private RefreshWebSocketHandler refreshWebSocketHandler;
 
     @Autowired
     private OrderDAO orderDAO;
@@ -61,6 +65,9 @@ public class OrderingController {
             order.setAffiliationCode(request.getAffiliationCode());
 
             int result = orderDAO.insertOrder(order);
+
+            refreshWebSocketHandler.notifyAdmin(List.of("requestList"));
+
             return result > 0 ? "요청을 발송했습니다." : "Failed to create order.";
         } catch (Exception e) {
             return "예기치 못한 오류가 발생했습니다.";
@@ -76,6 +83,7 @@ public class OrderingController {
 
             if (customProperties.getAffiliationCode().equals(request.getAffiliationCode())) {
                 int result = orderDAO.updateState(order_id, "processed");
+                refreshWebSocketHandler.notifyUser(List.of("requestList"));
                 return result > 0 ? "요청이 수락되었습니다." : "Failed to update order.";
             }
             return "Unauthorized to accept order.";
@@ -107,7 +115,7 @@ public class OrderingController {
                 dto.setNotes(notes);
 
                 orderRejectionHistoryDAO.insert(dto);
-
+                refreshWebSocketHandler.notifyUser(List.of("requestList"));
                 return result > 0 ? "요청이 거절되었습니다." : "Failed to update order.";
             }
             return "Unauthorized to dismiss order.";
@@ -130,7 +138,7 @@ public class OrderingController {
                     authServiceSession.getSessionUser(),
                     orderDTO.getQuantity()
             );
-
+            refreshWebSocketHandler.notifyAdmin(List.of("requestList"));
             int result = orderDAO.updateState(order_id, "completed");
             return result > 0 ? "요청이 종결되었습니다." : "Failed to update order.";
         } catch (Exception e) {
@@ -145,6 +153,7 @@ public class OrderingController {
         }
         try {
             int result = orderDAO.updateState(order_id, "re-review-needed");
+            refreshWebSocketHandler.notifyAdmin(List.of("requestList"));
             return result > 0 ? "재검토 요청이 발송되었습니다." : "Failed to update order.";
         } catch (Exception e) {
             return "예기치 못한 오류가 발생했습니다.";

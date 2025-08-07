@@ -101,4 +101,14 @@ public class RefreshWebSocketHandler extends TextWebSocketHandler {
         msg.put("pages", pages);
         return objectMapper.writeValueAsString(msg);
     }
+
+    public void notifyAdmin(List<String> pages) {
+        RefreshEvent event = new RefreshEvent(pages);
+        adminSubject.notifyObservers(event);
+    }
+
+    public void notifyUser(List<String> pages) {
+        RefreshEvent event = new RefreshEvent(pages);
+        userSubject.notifyObservers(event);
+    }
 }
