@@ -9,6 +9,7 @@ import main.model.db.dto.db.ItemStockDTO;
 import main.model.db.dto.itemQuantity.ItemQuantityRequest;
 import main.model.db.dto.itemQuantity.ItemQuantityResponse;
 import main.properties.CustomProperties;
+import main.refresh.RefreshWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/items")
 public class ItemController {
+
+    @Autowired
+    private RefreshWebSocketHandler refreshWebSocketHandler;
 
     @Autowired
     private ItemDAO itemDAO;
@@ -44,6 +48,7 @@ public class ItemController {
         }
         try {
             itemDAO.insertItem(itemDTO);
+            refreshWebSocketHandler.notifyUser(List.of("itemList"));
             return "추가 성공";
         } catch (DeleteAffiliationException e) {
             return e.getMessage();
@@ -87,6 +92,7 @@ public class ItemController {
         }
         try {
             itemDAO.updateItemState(itemId, state);
+            refreshWebSocketHandler.notifyUser(List.of("itemList"));
             return ResponseEntity.ok("상태 변환에 성공했습니다.");
         } catch (Exception e) {
             e.printStackTrace();

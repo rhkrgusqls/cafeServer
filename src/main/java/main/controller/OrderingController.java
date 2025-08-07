@@ -83,7 +83,7 @@ public class OrderingController {
 
             if (customProperties.getAffiliationCode().equals(request.getAffiliationCode())) {
                 int result = orderDAO.updateState(order_id, "processed");
-                refreshWebSocketHandler.notifyUser(List.of("requestList"));
+                refreshWebSocketHandler.notifyUser(List.of("affiliationRequestList"));
                 return result > 0 ? "요청이 수락되었습니다." : "Failed to update order.";
             }
             return "Unauthorized to accept order.";
@@ -105,7 +105,7 @@ public class OrderingController {
         try {
             if (customProperties.getAffiliationCode().equals(request.getAffiliationCode())) {
                 // 상태 변경
-                int result = orderDAO.updateState(order_id, "dismissed");
+                int result = orderDAO.updateState(order_id, "affiliationRequestList");
 
                 // 거절 이력 저장
                 OrderRejectionHistoryDTO dto = new OrderRejectionHistoryDTO();

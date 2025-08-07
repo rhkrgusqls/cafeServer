@@ -8,6 +8,7 @@ import main.model.db.dao.AffiliationDAO;
 import main.model.db.dto.affiliationList.AffiliationListResponse;
 import main.model.db.dto.signup.SignUpResponse;
 import main.properties.CustomProperties;
+import main.refresh.RefreshWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +30,12 @@ public class AffiliationListController {
     @Autowired
     private CustomProperties  customProperties;
 
+    @Autowired
+    private RefreshWebSocketHandler refreshWebSocketHandler;
+
     @GetMapping("/list")
     public AffiliationListResponse getAffiliationList() {
+
         if(!authServiceSession.getSessionUser().equals(customProperties.getAffiliationCode())) {
             return null;
         }
@@ -50,6 +55,7 @@ public class AffiliationListController {
         }
 
         try {
+            refreshWebSocketHandler.notifyAdmin(List.of("storeManagement"));
             affiliationDAO.deleteAffiliation(affiliationCode);
             return "삭제가 완료되었습니다.";
         } catch (DeleteAffiliationException e) {
