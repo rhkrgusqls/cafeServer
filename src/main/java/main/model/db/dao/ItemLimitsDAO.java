@@ -87,20 +87,20 @@ public class ItemLimitsDAO {
     }
     public List<ItemLimitDTO> getItemLimitsWithStockCheckByAffiliationCode(String affiliationCode) {
         String sql = """
-    SELECT
-        il.item_id,
-        il.affiliation_code,
-        il.quantity,
-        COALESCE(SUM(CASE WHEN s.status = 'available' THEN s.quantity ELSE 0 END), 0) AS stock_quantity
-    FROM item_limits il
-    INNER JOIN item i ON il.item_id = i.item_id AND i.state = 'available'
-    LEFT JOIN item_stock s
-        ON il.item_id = s.item_id
-        AND il.affiliation_code = s.affiliation_code
-        AND s.status = 'available'
-    WHERE il.affiliation_code = ?
-    GROUP BY il.item_id, il.affiliation_code, il.quantity
-    ORDER BY il.item_id ASC
+        SELECT
+            il.item_id,
+            il.affiliation_code,
+            il.quantity,
+            COALESCE(SUM(CASE WHEN s.status = 'available' THEN s.quantity ELSE 0 END), 0) AS stock_quantity
+        FROM item_limits il
+        INNER JOIN item i ON il.item_id = i.item_id AND i.state = 'available'
+        LEFT JOIN item_stock s
+            ON il.item_id = s.item_id
+            AND il.affiliation_code = s.affiliation_code
+            AND s.status = 'available'
+        WHERE il.affiliation_code = ?
+        GROUP BY il.item_id, il.affiliation_code, il.quantity
+        ORDER BY il.item_id ASC
     """;
 
         return jdbcTemplate.query(sql, new Object[]{affiliationCode}, (rs, rowNum) -> {
@@ -108,8 +108,11 @@ public class ItemLimitsDAO {
             dto.setItemId(rs.getInt("item_id"));
             dto.setAffiliationCode(rs.getString("affiliation_code"));
             dto.setQuantity(rs.getInt("quantity"));
+
             int stockQty = rs.getInt("stock_quantity");
+            dto.setRealQuantity(stockQty);  // 실제 재고 수량 설정
             dto.setWithinLimit(stockQty <= dto.getQuantity());
+
             return dto;
         });
     }
