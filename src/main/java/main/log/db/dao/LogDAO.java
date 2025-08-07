@@ -33,18 +33,64 @@ public class LogDAO {
     }
 
     // 시간순 정렬된 출고 리스트 (점포 + 아이템별)
-    public List<ShipmentDTO> getShipmentsByAffiliationAndItem(String affiliationCode, int itemId) {
-        String sql = """
-        SELECT item_id, quantity, target_affiliation_code, shipment_time
-        FROM headquarter_shipments
-        WHERE target_affiliation_code = ? AND item_id = ?
-        ORDER BY shipment_time ASC
-    """;
-        return jdbcTemplate.query(sql, new Object[]{affiliationCode, itemId}, (rs, rowNum) -> new ShipmentDTO(
+    public List<ShipmentDTO> getShipmentsByAffiliationAndItem(String affiliationCode, int itemId, String groupType) {
+        String groupFormat;
+        switch (groupType.toLowerCase()) {
+            case "day":
+                groupFormat = "%Y-%m-%d";
+                break;
+            case "month":
+                groupFormat = "%Y-%m";
+                break;
+            case "year":
+                groupFormat = "%Y";
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid group type. Use 'day', 'month', or 'year'");
+        }
+
+        StringBuilder sql = new StringBuilder();
+
+        String groupByClause = "";
+        switch (groupType.toLowerCase()) {
+            case "day":
+                groupByClause = "DATE(shipment_time)";
+                break;
+            case "month":
+                groupByClause = "DATE_FORMAT(shipment_time, '%Y-%m-01')";
+                break;
+            case "year":
+                groupByClause = "DATE_FORMAT(shipment_time, '%Y-01-01')";
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid group type. Use 'day', 'month', or 'year'");
+        }
+
+                sql.append("""
+            SELECT item_id,
+                   SUM(quantity) AS total_quantity,
+                   target_affiliation_code,
+                   MIN(shipment_time) AS shipment_time
+            FROM headquarter_shipments
+            WHERE item_id = ?
+        """);
+
+        List<Object> params = new ArrayList<>();
+        params.add(itemId);
+
+        if (!"*".equals(affiliationCode)) {
+            sql.append(" AND target_affiliation_code = ?");
+            params.add(affiliationCode);
+        }
+
+        sql.append(" GROUP BY item_id, target_affiliation_code, " + groupByClause);
+        sql.append(" ORDER BY shipment_time ASC");
+
+        return jdbcTemplate.query(sql.toString(), params.toArray(), (rs, rowNum) -> new ShipmentDTO(
                 rs.getInt("item_id"),
-                rs.getInt("quantity"),
+                rs.getInt("total_quantity"),
                 rs.getString("target_affiliation_code"),
-                rs.getTimestamp("shipment_time")
+                rs.getTimestamp("shipment_time")  // DTO Timestamp 타입 유지
         ));
     }
 

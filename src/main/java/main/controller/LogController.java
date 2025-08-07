@@ -33,17 +33,19 @@ public class LogController {
     @GetMapping("/shipments")
     public List<ShipmentDTO> getShipments(
             @RequestParam(required = false) String affiliationCode,
-            @RequestParam int itemId
+            @RequestParam int itemId,
+            @RequestParam(required = false, defaultValue = "day") String groupType  // 날짜 타입 추가, 기본값 day
     ) {
         String sessionAffiliationCode = authServiceSession.getSessionUser();
 
         if (affiliationCode == null) {
             affiliationCode = sessionAffiliationCode;
-        } else if (!affiliationCode.equals(customProperties.getAffiliationCode())) {
-            affiliationCode = sessionAffiliationCode;
+        }
+        if (affiliationCode.equals(customProperties.getAffiliationCode())) {
+            affiliationCode = "*";
         }
 
-        return logDAO.getShipmentsByAffiliationAndItem(affiliationCode, itemId);
+        return logDAO.getShipmentsByAffiliationAndItem(affiliationCode, itemId, groupType);
     }
 
     // 소비량 조회 (점포 + 아이템)
