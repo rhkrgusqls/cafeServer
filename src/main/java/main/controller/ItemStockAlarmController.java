@@ -2,7 +2,7 @@ package main.controller;
 
 import main.model.auth.AuthServiceSession;
 import main.model.db.dao.ItemLimitsDAO;
-import main.model.db.dto.db.ItemLimitDTO;
+import main.model.db.dto.itemStock.ItemLimitDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +24,7 @@ public class ItemStockAlarmController {
     @GetMapping("/list")
     public List<ItemLimitDTO> getItemLimits() {
         try {
-            return itemLimitsDAO.getItemLimitsByAffiliationCode(authServiceSession.getSessionUser());
+            return itemLimitsDAO.getItemLimitsWithStockCheckByAffiliationCode(authServiceSession.getSessionUser());
         } catch (Exception e) {
             return null;
         }
@@ -46,19 +46,4 @@ public class ItemStockAlarmController {
             return false;
         }
     }
-    /**
-     * GET: 재고량이 적다면 true반환
-     */
-    @GetMapping("/check")
-    public boolean checkItemStockLimit(@RequestParam int itemId) {
-        try {
-            return itemLimitsDAO.isStockQuantityWithinLimit(
-                    itemId,
-                    authServiceSession.getSessionUser()
-            );
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
 }
