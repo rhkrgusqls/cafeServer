@@ -85,10 +85,10 @@ public class LogController {
 
         if (affiliationCode == null) {
             affiliationCode = sessionAffiliationCode;
-        } else if (!affiliationCode.equals(customProperties.getAffiliationCode())) {
-            affiliationCode = sessionAffiliationCode;
         }
-
+        if (affiliationCode.equals(customProperties.getAffiliationCode())) {
+            affiliationCode = "*";
+        }
         return logDAO.getInventoryChangeLogsByAffiliationAndItem(affiliationCode, itemId);
     }
 
