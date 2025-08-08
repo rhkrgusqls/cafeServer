@@ -94,10 +94,12 @@ public class LogDAO {
         ));
     }
 
-    // 주간/월간/연간 소비량 합산 (점포별)
     public List<ConsumptionStatDTO> getConsumptionStatsByAffiliationAndItem(String period, Date startDate, String affiliationCode, int itemId) {
         String timeFormat;
         switch (period.toLowerCase()) {
+            case "day":   // 일 단위
+                timeFormat = "%Y-%m-%d";
+                break;
             case "week":
                 timeFormat = "%Y-%u";
                 break;
@@ -111,18 +113,26 @@ public class LogDAO {
                 throw new IllegalArgumentException("Invalid period: " + period);
         }
 
-        String sql = """
-        SELECT item_id,
-               DATE_FORMAT(consumption_time, ?) as period,
-               SUM(quantity) as total_quantity
-        FROM item_consumptions
-        WHERE consumption_time >= ? AND affiliation_code = ? AND item_id = ?
-        GROUP BY item_id, period
-        ORDER BY period ASC
-    """;
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT item_id, DATE_FORMAT(consumption_time, ?) as period, SUM(quantity) as total_quantity ");
+        sql.append("FROM item_consumptions ");
+        sql.append("WHERE consumption_time >= ? AND item_id = ? ");
 
-        return jdbcTemplate.query(sql,
-                new Object[]{timeFormat, new java.sql.Timestamp(startDate.getTime()), affiliationCode, itemId},
+        Object[] params;
+
+        if (!"*".equals(affiliationCode)) {
+            sql.append("AND affiliation_code = ? ");
+            sql.append("GROUP BY item_id, period ");
+            sql.append("ORDER BY period ASC");
+            params = new Object[]{timeFormat, new java.sql.Timestamp(startDate.getTime()), itemId, affiliationCode};
+        } else {
+            sql.append("GROUP BY item_id, period ");
+            sql.append("ORDER BY period ASC");
+            params = new Object[]{timeFormat, new java.sql.Timestamp(startDate.getTime()), itemId};
+        }
+
+        return jdbcTemplate.query(sql.toString(),
+                params,
                 (rs, rowNum) -> new ConsumptionStatDTO(
                         rs.getInt("item_id"),
                         rs.getString("period"),

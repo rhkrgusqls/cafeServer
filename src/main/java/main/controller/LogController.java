@@ -51,22 +51,28 @@ public class LogController {
     // 소비량 조회 (점포 + 아이템)
     @GetMapping("/consumptions")
     public List<ConsumptionStatDTO> getConsumptions(
-            @RequestParam String period,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false, defaultValue = "day") String groupType,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) String affiliationCode,
             @RequestParam int itemId
     ) {
+
+        if (startDate == null) {
+            startDate = LocalDate.of(2000, 1, 1);
+        }
+
         String sessionAffiliationCode = authServiceSession.getSessionUser();
 
         if (affiliationCode == null) {
             affiliationCode = sessionAffiliationCode;
-        } else if (!affiliationCode.equals(customProperties.getAffiliationCode())) {
-            affiliationCode = sessionAffiliationCode;
+        }
+        if (affiliationCode.equals(customProperties.getAffiliationCode())) {
+            affiliationCode = "*";
         }
 
         Date sqlStartDate = java.sql.Date.valueOf(startDate);
 
-        return logDAO.getConsumptionStatsByAffiliationAndItem(period, sqlStartDate, affiliationCode, itemId);
+        return logDAO.getConsumptionStatsByAffiliationAndItem(groupType, sqlStartDate, affiliationCode, itemId);
     }
 
     // 재고 변화 로그 조회 (점포 + 아이템)
