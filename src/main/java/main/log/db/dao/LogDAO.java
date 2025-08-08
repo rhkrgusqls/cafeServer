@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -131,8 +132,19 @@ public class LogDAO {
                 rs.getTimestamp("change_time")
         ));
     }
-    public List<Map<String, Integer>> getMonthlyInventoryBreakdown(String month, int itemId, int affiliationCode) {
-        String sql = """
+    public Map<String, Integer> getMonthlyInventoryBreakdown(String month,int  itemId, String affiliationCode) {
+        // 월별 누적 LEFTOVER 계산용
+        String sumSql = """
+        SELECT change_type, SUM(quantity) AS sum_qty
+        FROM inventory_change_logs
+        WHERE item_id = ?
+          AND affiliation_code = ?
+          AND DATE_FORMAT(change_time, '%Y-%m') <= ?
+        GROUP BY change_type
+    """;
+
+        // 이번 달 기준 음수 데이터만 추출용
+        String filteredSql = """
         SELECT change_type, SUM(quantity) AS sum_qty
         FROM inventory_change_logs
         WHERE item_id = ?
@@ -141,34 +153,39 @@ public class LogDAO {
         GROUP BY change_type
     """;
 
-        List<Map<String, Object>> results = jdbcTemplate.queryForList(sql, itemId, affiliationCode, month);
+        List<Map<String, Object>> currentMonth = jdbcTemplate.queryForList(filteredSql, itemId, affiliationCode, month);
+        List<Map<String, Object>> cumulative = jdbcTemplate.queryForList(sumSql, itemId, affiliationCode, month);
 
-        int inbound = 0;
-        int modify = 0;
-        int usage = 0;
         int disposal = 0;
+        int usage = 0;
         int shipment = 0;
+        int leftover = 0;
 
-        for (Map<String, Object> row : results) {
+        // 현재 월 음수 데이터 필터링
+        for (Map<String, Object> row : currentMonth) {
             String type = (String) row.get("change_type");
             int qty = ((Number) row.get("sum_qty")).intValue();
 
+            if (qty >= 0) continue;
+
             switch (type) {
-                case "INBOUND" -> inbound += qty;
-                case "MODIFY" -> modify += qty;
-                case "USAGE" -> usage += Math.abs(qty);
                 case "DISPOSAL" -> disposal += Math.abs(qty);
+                case "USAGE" -> usage += Math.abs(qty);
                 case "SHIPMENT" -> shipment += Math.abs(qty);
             }
         }
 
-        int leftover = inbound + modify - (usage + disposal + shipment);
+        // 전체 누적 LEFTOVER 계산
+        for (Map<String, Object> row : cumulative) {
+            int qty = ((Number) row.get("sum_qty")).intValue();
+            leftover += qty;
+        }
 
-        List<Map<String, Integer>> result = new ArrayList<>();
-        result.add(Map.of("DISPOSAL", disposal));
-        result.add(Map.of("USAGE", usage));
-        result.add(Map.of("SHIPMENT", shipment));
-        result.add(Map.of("LEFTOVER", leftover));
+        Map<String, Integer> result = new LinkedHashMap<>();
+        if (disposal > 0) result.put("DISPOSAL", disposal);
+        if (usage > 0) result.put("USAGE", usage);
+        if (shipment > 0) result.put("SHIPMENT", shipment);
+        result.put("LEFTOVER", leftover);
 
         return result;
     }

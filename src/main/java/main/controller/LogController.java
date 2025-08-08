@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -102,8 +103,10 @@ public class LogController {
         } else if (!affiliationCode.equals(customProperties.getAffiliationCode())) {
             affiliationCode = sessionAffiliationCode;
         }
+        List<Map<String, Integer>> test = new ArrayList<>();
+        test.add(logDAO.getMonthlyInventoryBreakdown(month, itemId, affiliationCode));
 
-        return logDAO.getMonthlyInventoryBreakdown(month, itemId, Integer.parseInt(affiliationCode));
+        return test;
     }
 
 }
