@@ -67,9 +67,7 @@ public class LogController {
         if (affiliationCode == null) {
             affiliationCode = sessionAffiliationCode;
         }
-        if (affiliationCode.equals(customProperties.getAffiliationCode())) {
-            affiliationCode = "*";
-        }
+
 
         Date sqlStartDate = java.sql.Date.valueOf(startDate);
 
