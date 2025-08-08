@@ -32,26 +32,8 @@ public class LogDAO {
         return jdbcTemplate.update(sql, itemId, quantity, changeType, affiliationCode, new java.sql.Timestamp(changeTime.getTime()));
     }
 
-    // 시간순 정렬된 출고 리스트 (점포 + 아이템별)
     public List<ShipmentDTO> getShipmentsByAffiliationAndItem(String affiliationCode, int itemId, String groupType) {
-        String groupFormat;
-        switch (groupType.toLowerCase()) {
-            case "day":
-                groupFormat = "%Y-%m-%d";
-                break;
-            case "month":
-                groupFormat = "%Y-%m";
-                break;
-            case "year":
-                groupFormat = "%Y";
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid group type. Use 'day', 'month', or 'year'");
-        }
-
-        StringBuilder sql = new StringBuilder();
-
-        String groupByClause = "";
+        String groupByClause;
         switch (groupType.toLowerCase()) {
             case "day":
                 groupByClause = "DATE(shipment_time)";
@@ -66,14 +48,15 @@ public class LogDAO {
                 throw new IllegalArgumentException("Invalid group type. Use 'day', 'month', or 'year'");
         }
 
-                sql.append("""
-            SELECT item_id,
-                   SUM(quantity) AS total_quantity,
-                   target_affiliation_code,
-                   MIN(shipment_time) AS shipment_time
-            FROM headquarter_shipments
-            WHERE item_id = ?
-        """);
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("""
+        SELECT item_id,
+               SUM(quantity) AS total_quantity,
+               MIN(shipment_time) AS shipment_time
+        FROM headquarter_shipments
+        WHERE item_id = ?
+    """);
 
         List<Object> params = new ArrayList<>();
         params.add(itemId);
@@ -83,23 +66,23 @@ public class LogDAO {
             params.add(affiliationCode);
         }
 
-        sql.append(" GROUP BY item_id, target_affiliation_code, " + groupByClause);
+        sql.append(" GROUP BY item_id, " + groupByClause);
         sql.append(" ORDER BY shipment_time ASC");
 
         return jdbcTemplate.query(sql.toString(), params.toArray(), (rs, rowNum) -> new ShipmentDTO(
                 rs.getInt("item_id"),
                 rs.getInt("total_quantity"),
-                rs.getString("target_affiliation_code"),
-                rs.getTimestamp("shipment_time")  // DTO Timestamp 타입 유지
+                affiliationCode,  // 파라미터로 들어온 값 고정으로 넣기
+                rs.getTimestamp("shipment_time")
         ));
     }
 
+
+
+    // 주간/월간/연간 소비량 합산 (점포별)
     public List<ConsumptionStatDTO> getConsumptionStatsByAffiliationAndItem(String period, Date startDate, String affiliationCode, int itemId) {
         String timeFormat;
         switch (period.toLowerCase()) {
-            case "day":   // 일 단위
-                timeFormat = "%Y-%m-%d";
-                break;
             case "week":
                 timeFormat = "%Y-%u";
                 break;
@@ -113,26 +96,18 @@ public class LogDAO {
                 throw new IllegalArgumentException("Invalid period: " + period);
         }
 
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT item_id, DATE_FORMAT(consumption_time, ?) as period, SUM(quantity) as total_quantity ");
-        sql.append("FROM item_consumptions ");
-        sql.append("WHERE consumption_time >= ? AND item_id = ? ");
+        String sql = """
+        SELECT item_id,
+               DATE_FORMAT(consumption_time, ?) as period,
+               SUM(quantity) as total_quantity
+        FROM item_consumptions
+        WHERE consumption_time >= ? AND affiliation_code = ? AND item_id = ?
+        GROUP BY item_id, period
+        ORDER BY period ASC
+    """;
 
-        Object[] params;
-
-        if (!"*".equals(affiliationCode)) {
-            sql.append("AND affiliation_code = ? ");
-            sql.append("GROUP BY item_id, period ");
-            sql.append("ORDER BY period ASC");
-            params = new Object[]{timeFormat, new java.sql.Timestamp(startDate.getTime()), itemId, affiliationCode};
-        } else {
-            sql.append("GROUP BY item_id, period ");
-            sql.append("ORDER BY period ASC");
-            params = new Object[]{timeFormat, new java.sql.Timestamp(startDate.getTime()), itemId};
-        }
-
-        return jdbcTemplate.query(sql.toString(),
-                params,
+        return jdbcTemplate.query(sql,
+                new Object[]{timeFormat, new java.sql.Timestamp(startDate.getTime()), affiliationCode, itemId},
                 (rs, rowNum) -> new ConsumptionStatDTO(
                         rs.getInt("item_id"),
                         rs.getString("period"),
