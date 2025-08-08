@@ -117,12 +117,12 @@ public class ItemStockDAO {
             int itemId = ((Number) stockInfo.get("item_id")).intValue();
             String affiliationCode = (String) stockInfo.get("affiliation_code");
 
-            logDAO.insertChangeLog(itemId, quantity, "MODIFY", affiliationCode, new java.util.Date());
+            int changeAmount = quantity - currentQuantity;
+            logDAO.insertChangeLog(itemId, changeAmount, "MODIFY", affiliationCode, new java.util.Date());
         }
 
         return result;
     }
-
 
     /**
      * 물량 수정
@@ -150,12 +150,12 @@ public class ItemStockDAO {
             int itemId = ((Number) stockInfo.get("item_id")).intValue();
             String affiliationCode = (String) stockInfo.get("affiliation_code");
 
-            logDAO.insertChangeLog(itemId, quantity, "MODIFY", affiliationCode, new java.util.Date());
+            int changeAmount = quantity - currentQuantity;
+            logDAO.insertChangeLog(itemId, changeAmount, "MODIFY", affiliationCode, new java.util.Date());
         }
 
         return result;
     }
-
 
     /**
      * 상태 수정
@@ -168,13 +168,11 @@ public class ItemStockDAO {
         try {
             stockInfo = jdbcTemplate.queryForMap(selectSql, stockId);
         } catch (EmptyResultDataAccessException e) {
-            // 해당 stockId가 존재하지 않으면 처리하지 않음
             return 0;
         }
 
         String currentStatus = (String) stockInfo.get("status");
 
-        // 상태가 바뀌지 않았으면 업데이트, 로그 모두 생략
         if (Objects.equals(currentStatus, status)) {
             return 0;
         }
@@ -187,7 +185,7 @@ public class ItemStockDAO {
             int quantity = ((Number) stockInfo.get("quantity")).intValue();
             String affiliationCode = (String) stockInfo.get("affiliation_code");
 
-            logDAO.insertChangeLog(itemId, quantity, "MODIFY", affiliationCode, new java.util.Date());
+            logDAO.insertChangeLog(itemId, 0, "MODIFY", affiliationCode, new java.util.Date()); // 변화량 없음 → 0 기록
         }
 
         return result;
