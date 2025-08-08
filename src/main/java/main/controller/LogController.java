@@ -100,8 +100,6 @@ public class LogController {
 
         if (affiliationCode == null) {
             affiliationCode = sessionAffiliationCode;
-        } else if (!affiliationCode.equals(customProperties.getAffiliationCode())) {
-            affiliationCode = sessionAffiliationCode;
         }
         List<Map<String, Integer>> test = new ArrayList<>();
         test.add(logDAO.getMonthlyInventoryBreakdown(month, itemId, affiliationCode));

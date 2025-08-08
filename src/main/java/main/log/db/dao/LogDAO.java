@@ -84,9 +84,6 @@ public class LogDAO {
     public List<ConsumptionStatDTO> getConsumptionStatsByAffiliationAndItem(String period, Date startDate, String affiliationCode, int itemId) {
         String timeFormat;
         switch (period.toLowerCase()) {
-            case "day":
-                timeFormat = "%Y-%m-%d";
-                break;
             case "week":
                 timeFormat = "%Y-%u";
                 break;
